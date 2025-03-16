@@ -12,8 +12,9 @@ from sklearn import metrics
 
 
 def map_func(storage, location):
-    return storage.cuda()
-
+    
+    device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+    return storage.to(device)
 
 def create_logger(name, log_file, level=logging.INFO):
     log = logging.getLogger(name)

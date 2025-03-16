@@ -97,7 +97,7 @@ class PerlinPatchMaker(PatchShapeMaker):
 
             if np.mean(mask_noise) >= self.perlin_min_size:
                 break
-        return mask_noise.astype(np.bool), None
+        return mask_noise.astype(bool), None
 
 
     def get_patch_mask(self, dim_bounds: List[Tuple[int, int]], img_dims: np.ndarray) -> npt.NDArray[bool]:

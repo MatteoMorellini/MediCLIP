@@ -9,7 +9,7 @@ import math
 import argparse
 import warnings
 from utils.misc_helper import *
-from datasets.dataset import ChexpertTestDataset,BusiTestDataset,BrainMRITestDataset
+from datasets.dataset_paper import ChexpertTestDataset,BusiTestDataset,BrainMRITestDataset, BratsMetTestDataset
 from torch.utils.data import DataLoader
 from models.MapMaker import MapMaker
 import pprint
@@ -18,12 +18,17 @@ from pytorch_grad_cam.utils.image import show_cam_on_image
 from tqdm import tqdm
 from PIL import Image
 import cv2
+import nibabel as nib
+import PIL
+import matplotlib.pyplot as plt
+from pathlib import Path
+
 
 warnings.filterwarnings('ignore')
 
 def normalization(segmentations, image_size, avgpool_size = 128):
-
-    segmentations = torch.tensor(segmentations[:, None, ...]).cuda()  # N x 1 x H x W
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    segmentations = torch.tensor(segmentations[:, None, ...]).to(device)  # N x 1 x H x W
     segmentations = F.interpolate(segmentations,(image_size, image_size), mode='bilinear', align_corners=True)
 
     segmentations_ =  F.avg_pool2d(segmentations, (avgpool_size,avgpool_size), stride=1).cpu().numpy()
@@ -52,9 +57,16 @@ def make_vision_takens_info(model,model_cfg,layers_out):
 
     img_feature,tokens = model.encode_image(img,layers_out)
 
+    # img_feature - represents the global image embedding, usually as [CLS] token so shape [Batch, Feature Dim] = [1, 768] 
+    # to match text embedding dim, perhaps through a linear layer. Used for image-text similarity 
+    # tokens - list of tensors, each tensor represents the tokenized image features at different layers
+        # tokens[0].shape - [1, 257, 1024]
+        # tokens[1].shape - [1, 257, 1024]
+        # tokens[2].shape - [1, 257, 1024]
+
     if len(tokens[0].shape)==3:
-        model.token_size= [int(math.sqrt(token.shape[1]-1)) for token in tokens]
-        model.token_c= [token.shape[-1]  for token in tokens]
+        model.token_size= [int(math.sqrt(token.shape[1]-1)) for token in tokens] # how many tokens in each dimension in each layer
+        model.token_c= [token.shape[-1]  for token in tokens] # number of channels in each token
     else:
         model.token_size = [token.shape[2] for token in tokens]
         model.token_c = [token.shape[1] for token in tokens]
@@ -66,7 +78,7 @@ def make_vision_takens_info(model,model_cfg,layers_out):
 @torch.no_grad()
 def main(args):
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     with open(args.config_path) as f:
         args.config = EasyDict(yaml.load(f, Loader=yaml.FullLoader))
@@ -102,8 +114,9 @@ def main(args):
 
     map_maker = MapMaker(image_size=args.config.image_size).to(model.device)
 
-
-    checkpoints = torch.load(args.checkpoint_path,map_location=map_func)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    checkpoints = torch.load(args.checkpoint_path, map_location=str(device))  # Pass device as string
     adapter.load_state_dict(checkpoints['adapter_state_dict'])
     prompt_maker.prompt_learner.load_state_dict(checkpoints['prompt_state_dict'])
     prompt_maker.prompt_learner.eval()
@@ -131,12 +144,21 @@ def main(args):
                                             args=args.config,
                                             source=os.path.join(args.config.data_root,test_dataset_name),
                                             preprocess=preprocess)
+        elif test_dataset_name == 'brats-met':
+
+            test_dataset = BratsMetTestDataset(
+                                            args=args.config,
+                                            source=os.path.join(args.config.data_root,test_dataset_name),
+                                            preprocess=preprocess) 
+            args.config.batch_size = 1 
+
         else:
-            raise NotImplementedError("dataset must in ['chexpert','busi','brainmri'] ")
-
-        test_dataloader = DataLoader(test_dataset, batch_size=args.config.batch_size,num_workers=2)
+            raise NotImplementedError("dataset must in ['chexpert','busi','brainmri', 'brats-met] ")
+        
+        # TODO: understand whether batch_size can have a value different from 1
+        test_dataloader = DataLoader(test_dataset, batch_size=args.config.batch_size,num_workers=1)
         results = validate(args,test_dataset_name,test_dataloader,model,necker,adapter,prompt_maker,map_maker)
-
+        if test_dataset_name=='brats-met': return
         if test_dataset_name!='busi':
             print("{}, image auroc: {:.4f}".format(test_dataset_name, results["image-auroc"]))
         else:
@@ -144,40 +166,48 @@ def main(args):
 
 
 def validate(args, dataset_name, test_dataloader, clip_model, necker, adapter, prompt_maker, map_maker):
-
     image_preds = []
-    image_gts= []
+    image_gts= [] # ground-truth labels for whole image
 
     pixel_preds = []
     pixel_gts = []
 
     image_paths = []
-
-    for i, input in enumerate(test_dataloader):
-
-        images = input['image'].to(clip_model.device)
+    for i, input in enumerate(test_dataloader): # iterate over batches of test images
+        if dataset_name == 'brats-met':
+            images = input['image'].squeeze(0).to(clip_model.device)
+        else:
+            images = input['image'].to(clip_model.device)
+        
         image_paths.extend(input['image_path'])
-
         _, image_tokens = clip_model.encode_image(images, out_layers=args.config.layers_out)
         image_features = necker(image_tokens)
         vision_adapter_features = adapter(image_features)
         propmt_adapter_features = prompt_maker(vision_adapter_features)
+        # compare vision and prompt features to get anomaly heatmaps
         anomaly_map = map_maker(vision_adapter_features, propmt_adapter_features)
+        
+        B, _, H, W = anomaly_map.shape # _ is the number of channels: Sn and Sa
+        anomaly_map = anomaly_map[:,1,:,:] # keep only the anomaly map
 
-        B, _, H, W = anomaly_map.shape
-        anomaly_map = anomaly_map[:,1,:,:]
-
-        pixel_preds.append(anomaly_map)
-        anomaly_score,_ =torch.max(anomaly_map.view((B,H*W)), dim=-1)
-
-        image_preds.extend(anomaly_score.cpu().numpy().tolist())
+        pixel_preds.append(anomaly_map) # append since we have a whole matrix
+        # @todo: check if this is correct
+        if dataset_name == 'brats-met':
+            anomaly_score = torch.tensor([float(torch.max(anomaly_map))])
+        else:
+            anomaly_score,_ = torch.max(anomaly_map.view((B,H*W)), dim=-1)
+        image_preds.extend(anomaly_score.cpu().numpy().tolist()) # extend since it is a list of scalar
         image_gts.extend(input['is_anomaly'].cpu().numpy().tolist())
-
+        
         if dataset_name=='busi':
             pixel_gts.append(input['mask'].cpu().numpy())
+    # pixel_preds = [Tensor[B, H, W], Tensor[B, H, W], ...] -> Tensor[N, H, W]
 
     pixel_preds_np = [pixel_pred.cpu().numpy() for pixel_pred in pixel_preds]
-    pixel_preds = normalization(torch.cat(pixel_preds,dim=0), args.config.image_size)
+    if dataset_name == 'brats-met':
+        pixel_preds = [normalization(pixel_pred, args.config.image_size) for pixel_pred in pixel_preds]
+    else:
+        pixel_preds = normalization(torch.cat(pixel_preds,dim=0), args.config.image_size)
 
     if dataset_name == 'busi':
         pixel_gts = np.concatenate(pixel_gts,axis=0)
@@ -199,37 +229,69 @@ def validate(args, dataset_name, test_dataloader, clip_model, necker, adapter, p
                 desc="Generating Segmentation Images...",
                 leave=False,
         )
+    
 
     for i, data in enumerate(iter):
+        
         if dataset_name=='busi':
             image_path, image_gt, pixel_pred, pixel_gt = data
         else:
             image_path, image_gt, pixel_pred = data
-
+        
         _, image_name = os.path.split(image_path)
+        image_name = image_name.split('.')[0]
 
-        image = Image.open(image_path).convert("RGB")
-        image = image.resize((args.config.image_size,args.config.image_size))
-        image = np.array(image).astype(np.uint8)
+        if dataset_name == 'brats-met':
+            
+            fmri = nib.load(image_path)
+            
+            n_slices = fmri.shape[-1]
+            
+            for _ in range(n_slices-1):
+                slice = fmri.get_fdata()[:, :, _]
 
-        heat = show_cam_on_image( image / 255, pixel_pred, use_rgb=True)
+                slice_norm = (slice - np.min(slice)) / (np.max(slice) - np.min(slice) + 1e-8)  # Avoid division by zero
+                slice = (slice_norm * 255).astype(np.uint8)
 
-        label_= "normal" if image_gt==0 else "abnormal"
+                image = PIL.Image.fromarray(slice).convert("RGB").resize((args.config.image_size,args.config.image_size),PIL.Image.Resampling.BILINEAR)
+                
+                heat = show_cam_on_image( np.array(image) / 255, pixel_pred[_], use_rgb=True)
 
-        merge = [image,heat]
+                label_= "normal" if image_gt==0 else "abnormal"
 
-        if dataset_name == 'busi':
-            pixel_gt = np.repeat(np.expand_dims(pixel_gt,axis=-1),3,axis=-1)
-            merge.append(pixel_gt*255)
+                merge = [image,heat]
 
-        Image.fromarray(np.concatenate(merge,axis=1).astype(np.uint8)).save(os.path.join(save_images_root,"{}_{}_{}".format(i,label_,image_name)))
+                Image.fromarray(np.concatenate(merge,axis=1).astype(np.uint8)).save(os.path.join(save_images_root,f"{image_name}_{_}.png"))
 
-    metric = compute_imagewise_metrics(image_preds,image_gts)
-    if dataset_name == 'busi':
-        metric.update(compute_pixelwise_metrics(pixel_preds_np, pixel_gts))
+  
+            data_array = np.stack(pixel_pred, axis=-1)*1000
+            nii_image = nib.Nifti1Image(data_array, affine=np.eye(4))  # Identity affine matrix        
+            nib.save(nii_image, os.path.join(save_images_root,f"{image_name}.nii.gz"))
+        else:    
+            image = Image.open(image_path).convert("RGB")
+            image = image.resize((args.config.image_size,args.config.image_size))
+            image = np.array(image).astype(np.uint8)
 
-    return metric
+            heat = show_cam_on_image( image / 255, pixel_pred, use_rgb=True)
 
+            label_= "normal" if image_gt==0 else "abnormal"
+
+            merge = [image,heat]
+
+            if dataset_name == 'busi':
+                pixel_gt = np.repeat(np.expand_dims(pixel_gt,axis=-1),3,axis=-1)
+                merge.append(pixel_gt*255)
+
+            img = Image.fromarray(np.concatenate(merge,axis=1).astype(np.uint8))
+            print(os.path.join(save_images_root,"{}_{}_{}.jpg".format(i,label_,image_name)))
+            img.save(os.path.join(save_images_root,"{}_{}_{}.jpg".format(i,label_,image_name)))
+
+    # TODO: add brats-met
+    if dataset_name != 'brats-met':  
+        metric = compute_imagewise_metrics(image_preds,image_gts)
+        if dataset_name == 'busi': # for this specific dataset, since we have a ground truth mask, we can compute pixel-wise metrics
+            metric.update(compute_pixelwise_metrics(pixel_preds_np, pixel_gts))    
+        return metric
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Test MediCLIP")

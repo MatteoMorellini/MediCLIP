@@ -11,12 +11,17 @@ from utils.misc_helper import *
 from torch.utils.data import DataLoader
 from models.MapMaker import MapMaker
 from utils.losses import FocalLoss,BinaryDiceLoss
-from datasets.dataset import TrainDataset,\
-                                ChexpertTestDataset,\
+from datasets.dataset_paper import ChexpertTestDataset,\
                                 BusiTestDataset,\
-                                BrainMRITestDataset
+                                BrainMRITestDataset, \
+                                BratsMetTestDataset
+from datasets.dataset import TrainDataset, \
+                            TrainDatasetFewShot
 import pprint
+from PIL import Image
+from torchvision.transforms import ToPILImage
 from tqdm import tqdm
+import multiprocessing
 warnings.filterwarnings('ignore')
 
 
@@ -42,6 +47,7 @@ def make_vision_takens_info(model,model_cfg,layers_out):
 def main(args):
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print(device)
 
     with open(args.config_path) as f:
         args.config = EasyDict(yaml.load(f, Loader=yaml.FullLoader))
@@ -89,14 +95,29 @@ def main(args):
             {'params': prompt_maker.prompt_learner.parameters(),'lr': 0.001},
             {'params': adapter.parameters(),"lr":0.001},
         ], lr=0.001, betas=(0.5, 0.999))
+    
+    # TODO: change the root, now it's always taking brats-met
+    if args.patients:
+        train_dataset = TrainDatasetFewShot(args = args.config,
+                                root='data/brats-met/samples', 
+                                dataset_name='brats', 
+                                mode='train', 
+                                target_transform=None, 
+                                transform=preprocess, 
+                                k_shot = args.k_shot)
+    else:
+        train_dataset = TrainDataset(args = args.config,
+                                root='data/brats-met/samples', 
+                                dataset_name='brats', 
+                                mode='train', 
+                                target_transform=None, 
+                                transform=preprocess, 
+                                k_shot = args.k_shot)
+    num_workers = max(1, multiprocessing.cpu_count() - 1)
 
-    train_dataset = TrainDataset(args=args.config,
-                                    source=os.path.join(args.config.data_root,args.config.train_dataset),
-                                    preprocess=preprocess,
-                                    k_shot=args.k_shot)
 
-    train_dataloader = DataLoader(train_dataset, batch_size=args.config.batch_size, shuffle=True, num_workers=2)
-
+    train_dataloader = DataLoader(train_dataset, batch_size=args.config.batch_size, shuffle=True, num_workers=num_workers)
+    
     test_dataloaders = {}
     best_record = {}
 
@@ -104,7 +125,7 @@ def main(args):
 
         if test_dataset_name == 'chexpert':
             test_dataset = ChexpertTestDataset( args=args.config,
-                                            source=os.path.join(args.config.data_root,test_dataset_name),
+                                            source=os.path.join(args.config.data_root,test_dataset_name), # args.config.data_root = 'data' always
                                             preprocess=preprocess,
                                             )
 
@@ -121,8 +142,14 @@ def main(args):
                                             args=args.config,
                                             source=os.path.join(args.config.data_root,test_dataset_name),
                                             preprocess=preprocess)
+        elif test_dataset_name == 'brats-met':
+
+            test_dataset = BratsMetTestDataset(
+                                            args=args.config,
+                                            source=os.path.join(args.config.data_root,test_dataset_name),
+                                            preprocess=preprocess)
         else:
-            raise NotImplementedError("dataset must in ['chexpert','busi','brainmri'] ")
+            raise NotImplementedError("dataset must in ['chexpert','busi','brainmri', 'brats-met'] ")
 
         test_dataloader = DataLoader(test_dataset, batch_size=args.config.batch_size,num_workers=2)
         test_dataloaders[test_dataset_name]=test_dataloader
@@ -135,10 +162,9 @@ def main(args):
 
     for task_name in args.config.anomaly_tasks:
         logger.info("anomaly syn task is {}, sampling probability is {}".format(task_name,args.config.anomaly_tasks[task_name]))
-
+    
     for epoch in range(0, args.config.epoch):
         last_iter = epoch * len(train_dataloader)
-
         train_one_epoch(
             args,
             train_dataloader,
@@ -160,7 +186,7 @@ def main(args):
 
             for test_dataset_name in results:
                 if best_record[test_dataset_name] is None:
-                    if test_dataset_name=='busi':
+                    if test_dataset_name=='busi' or test_dataset_name == 'brats-met':
                         best_record[test_dataset_name] = [results[test_dataset_name]["image-auroc"],
                                                           results[test_dataset_name]['pixel-auroc']]
                     else:
@@ -169,7 +195,7 @@ def main(args):
                     save_flag=True
                 else:
                     if np.mean([results[test_dataset_name][key] for key in results[test_dataset_name]]) > np.mean(best_record[test_dataset_name]):
-                        if test_dataset_name == 'busi':
+                        if test_dataset_name == 'busi' or test_dataset_name == 'brats-met':
                             best_record[test_dataset_name] = [results[test_dataset_name]["image-auroc"],
                                                               results[test_dataset_name]['pixel-auroc']]
                         else:
@@ -177,7 +203,7 @@ def main(args):
                         save_flag=True
 
 
-                if test_dataset_name=='busi':
+                if test_dataset_name=='busi' or test_dataset_name=='brats-met':
                     logger.info("({}): Epoch: {}, image auroc: {:.4f}, pixel_auroc: {:.4f},".format(test_dataset_name,
                                                                                                     epoch+1,
                                                                                                     results[test_dataset_name]["image-auroc"],
@@ -190,7 +216,7 @@ def main(args):
                     ))
 
             for test_dataset_name in results:
-                if test_dataset_name == 'busi':
+                if test_dataset_name == 'busi' or test_dataset_name == 'brats-met':
                     logger.info(
                         "({} best): image auroc: {:.4f}, pixel auroc: {:.4f},".format(
                             test_dataset_name,
@@ -235,9 +261,11 @@ def train_one_epoch(
     prompt_maker.train()
 
     for i, input in enumerate(train_dataloader):
+        print(i)
         curr_step = start_iter + i
 
         images = input['image'].to(clip_model.device)
+
         gt_mask = input['mask'].to(clip_model.device)
 
         with torch.no_grad():
@@ -283,18 +311,15 @@ def validate(args, test_dataloaders, epoch, clip_model, necker, adapter, prompt_
 
     for test_dataset_name in test_dataloaders:
         test_dataloader = test_dataloaders[test_dataset_name]
-
         anomaly_maps = []
         anomaly_gts = []
 
         image_scores = []
         image_labels = []
-
+        
         with torch.no_grad():
             for i, input in enumerate(tqdm(test_dataloader,desc=test_dataset_name)):
-
-                images = input['image'].to(clip_model.device)
-
+                images = input['image'].to(clip_model.device).squeeze(0) # no need to keep the batch dimension with batch_size = 1
                 _, image_tokens = clip_model.encode_image(images, out_layers=args.config.layers_out)
                 image_features = necker(image_tokens)
                 vision_adapter_features = adapter(image_features)
@@ -304,21 +329,28 @@ def validate(args, test_dataloaders, epoch, clip_model, necker, adapter, prompt_
                 B,_,H,W = anomaly_map.shape
 
                 anomaly_map = anomaly_map[:,1,:,:]
-                anomaly_gt = input['mask']
+                anomaly_gt = input['mask'].squeeze(0) # no need to keep the batch dimension with batch_size = 1
 
                 anomaly_maps.append(anomaly_map.cpu().numpy())
                 anomaly_gts.append(anomaly_gt.cpu().numpy())
 
-                anomaly_score,_ = torch.max(anomaly_map.view((B,H*W)), dim=-1)
+                anomaly_scores,_ = torch.max(anomaly_map.view((B,H*W)), dim=-1) 
 
-                image_scores.extend(anomaly_score.cpu().numpy().tolist())
-                image_labels.extend(input['is_anomaly'].cpu().numpy().tolist())
+                image_scores.extend(anomaly_scores.cpu().numpy().tolist())
 
+                if test_dataset_name == 'brats-met':
+                    for mask in anomaly_gt:
+                        if (mask == 0).all():
+                            image_labels.append(0)
+                        else:
+                            image_labels.append(1)
+                else:
+                    image_labels.extend(input['is_anomaly'].cpu().numpy().tolist())
+        
         metric = compute_imagewise_metrics(image_scores,image_labels)
 
-        if test_dataset_name=='busi':
+        if test_dataset_name=='busi' or test_dataset_name=='brats-met':
             metric.update(compute_pixelwise_metrics(anomaly_maps,anomaly_gts))
-
         results[test_dataset_name] = metric
     return results
 
@@ -327,6 +359,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Train MediCLIP")
     parser.add_argument("--config_path", type=str, default='config/brainmri.yaml', help="model configs")
     parser.add_argument("--k_shot", type=int, default=16, help="normal image number")
+    parser.add_argument('--patients', type = bool, default = False, help = 'whether to k-shot refers to patients')
     args = parser.parse_args()
     torch.multiprocessing.set_start_method("spawn")
     main(args)

@@ -147,7 +147,7 @@ class BaseTask(ABC):
         if len(aug_mask.shape)==3 and aug_mask.shape[0]==1:
             aug_mask = aug_mask.squeeze(0)
 
-        return aug_sample,aug_mask.astype(np.float)
+        return aug_sample,aug_mask.astype(float)
 
 
     @abstractmethod
@@ -177,6 +177,7 @@ class BasePatchBlendingTask(BaseTask):
 
                  **all_kwargs):
         super().__init__(sample_labeller, **all_kwargs)
+        # ! non può essere vuoto source_samples
         self.source_samples = source_samples
         self.blend_images = blend_images
 
@@ -191,7 +192,6 @@ class BasePatchBlendingTask(BaseTask):
 
         num_channels = sample.shape[0] # 1
         num_dims = len(sample.shape[1:]) #2
-
         # Sample source to blend into current sample
         source_sample = random.choice(self.source_samples)
 
@@ -526,7 +526,7 @@ class GaussIntensityChangeTask(BaseTask):
                        anomaly_intersect_fn: Callable[[npt.NDArray[float], npt.NDArray[float]], npt.NDArray[float]]) \
             -> npt.NDArray[float]:
 
-        anomaly_mask_copy = anomaly_mask.astype(np.float)
+        anomaly_mask_copy = anomaly_mask.astype(float)
         anomaly_patch_slices = get_patch_image_slices(anomaly_corner, anomaly_mask_copy.shape)
 
         texture = self.create_texture(sample.shape[1:])
