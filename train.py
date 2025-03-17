@@ -18,8 +18,6 @@ from datasets.dataset_paper import ChexpertTestDataset,\
 from datasets.dataset import TrainDataset, \
                             TrainDatasetFewShot
 import pprint
-from PIL import Image
-from torchvision.transforms import ToPILImage
 from tqdm import tqdm
 import multiprocessing
 warnings.filterwarnings('ignore')
@@ -47,7 +45,6 @@ def make_vision_takens_info(model,model_cfg,layers_out):
 def main(args):
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    print(device)
 
     with open(args.config_path) as f:
         args.config = EasyDict(yaml.load(f, Loader=yaml.FullLoader))
@@ -96,19 +93,19 @@ def main(args):
             {'params': adapter.parameters(),"lr":0.001},
         ], lr=0.001, betas=(0.5, 0.999))
     
-    # TODO: change the root, now it's always taking brats-met
+    source = os.path.join(args.config.data_root,args.config.train_dataset)
+    # TODO: do we need to specify mode=train? this opens a sub-question: can we use the same dataset for training and testing?
     if args.patients:
+        assert args.config.train_dataset == 'brats-met', 'patients training supported only for brats-met dataset'
         train_dataset = TrainDatasetFewShot(args = args.config,
-                                root='data/brats-met/samples', 
-                                dataset_name='brats', 
+                                root=source, 
                                 mode='train', 
                                 target_transform=None, 
                                 transform=preprocess, 
                                 k_shot = args.k_shot)
     else:
         train_dataset = TrainDataset(args = args.config,
-                                root='data/brats-met/samples', 
-                                dataset_name='brats', 
+                                root=source, 
                                 mode='train', 
                                 target_transform=None, 
                                 transform=preprocess, 
@@ -261,7 +258,6 @@ def train_one_epoch(
     prompt_maker.train()
 
     for i, input in enumerate(train_dataloader):
-        print(i)
         curr_step = start_iter + i
 
         images = input['image'].to(clip_model.device)
