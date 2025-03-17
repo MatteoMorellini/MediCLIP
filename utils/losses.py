@@ -1,4 +1,3 @@
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -20,7 +19,15 @@ class FocalLoss(nn.Module):
     :param size_average: (bool, optional) By default, the losses are averaged over each loss element in the batch.
     """
 
-    def __init__(self, apply_nonlin=None, alpha=None, gamma=2, balance_index=0, smooth=1e-5, size_average=True):
+    def __init__(
+        self,
+        apply_nonlin=None,
+        alpha=None,
+        gamma=2,
+        balance_index=0,
+        smooth=1e-5,
+        size_average=True,
+    ):
         super(FocalLoss, self).__init__()
         self.apply_nonlin = apply_nonlin
         self.alpha = alpha
@@ -31,7 +38,7 @@ class FocalLoss(nn.Module):
 
         if self.smooth is not None:
             if self.smooth < 0 or self.smooth > 1.0:
-                raise ValueError('smooth value should be in [0,1]')
+                raise ValueError("smooth value should be in [0,1]")
 
     def forward(self, logit, target):
         if self.apply_nonlin is not None:
@@ -59,7 +66,7 @@ class FocalLoss(nn.Module):
             alpha[self.balance_index] = self.alpha
 
         else:
-            raise TypeError('Not support alpha type')
+            raise TypeError("Not support alpha type")
 
         if alpha.device != logit.device:
             alpha = alpha.to(logit.device)
@@ -73,7 +80,8 @@ class FocalLoss(nn.Module):
 
         if self.smooth:
             one_hot_key = torch.clamp(
-                one_hot_key, self.smooth / (num_class - 1), 1.0 - self.smooth)
+                one_hot_key, self.smooth / (num_class - 1), 1.0 - self.smooth
+            )
         pt = (one_hot_key * logit).sum(1) + self.smooth
         logpt = pt.log()
 
@@ -99,20 +107,20 @@ class BinaryDiceLoss(nn.Module):
         targets_flat = targets.view(N, -1)
 
         intersection = input_flat * targets_flat
-        N_dice_eff = (2 * intersection.sum(1) + smooth) / (input_flat.sum(1) + targets_flat.sum(1) + smooth)
+        N_dice_eff = (2 * intersection.sum(1) + smooth) / (
+            input_flat.sum(1) + targets_flat.sum(1) + smooth
+        )
         loss = 1 - N_dice_eff.sum() / N
         return loss
 
 
 class CrossEntropyLoss(nn.Module):
-
     def __init__(self):
         super().__init__()
         self.criterion = nn.CrossEntropyLoss()
 
-    def forward(self, logit,target):
-
-        bsz,_,h,w=logit.size()
+    def forward(self, logit, target):
+        bsz, _, h, w = logit.size()
         logit = logit.view(bsz, 2, -1)
         gt_mask = target.view(bsz, -1).long()
-        return self.criterion(logit,gt_mask)
+        return self.criterion(logit, gt_mask)

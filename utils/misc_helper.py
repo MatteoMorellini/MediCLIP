@@ -1,4 +1,3 @@
-
 import logging
 from datetime import datetime
 import random
@@ -12,9 +11,9 @@ from sklearn import metrics
 
 
 def map_func(storage, location):
-    
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     return storage.to(device)
+
 
 def create_logger(name, log_file, level=logging.INFO):
     log = logging.getLogger(name)
@@ -31,9 +30,8 @@ def create_logger(name, log_file, level=logging.INFO):
     return log
 
 
-
 def set_seed(seed):
-    os.environ['PYTHONHASHSEED'] = str(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
@@ -41,11 +39,9 @@ def set_seed(seed):
     random.seed(seed)
 
 
-
 def get_current_time():
     current_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     return current_time
-
 
 
 class AverageMeter(object):
@@ -81,10 +77,7 @@ class AverageMeter(object):
             self.avg = self.sum / self.count
 
 
-def compute_imagewise_metrics(
-    anomaly_prediction,
-    anomaly_ground_truth_labels
-):
+def compute_imagewise_metrics(anomaly_prediction, anomaly_ground_truth_labels):
     """
     Computes retrieval statistics (AUROC, FPR, TPR).
 
@@ -95,17 +88,12 @@ def compute_imagewise_metrics(
         anomaly_ground_truth_labels: [np.array or list] [N] Binary labels - 1
                                     if image is an anomaly, 0 if not.
     """
-    auroc = metrics.roc_auc_score(
-        anomaly_ground_truth_labels, anomaly_prediction
-    )
+    auroc = metrics.roc_auc_score(anomaly_ground_truth_labels, anomaly_prediction)
 
     return {"image-auroc": auroc}
 
 
-def compute_pixelwise_metrics(
-    pixel_prediction,
-    pixel_ground_truth_labels
-):
+def compute_pixelwise_metrics(pixel_prediction, pixel_ground_truth_labels):
     """
     Computes retrieval statistics (AUROC, FPR, TPR).
 
@@ -126,8 +114,6 @@ def compute_pixelwise_metrics(
 
     pixel_ground_truth_labels[pixel_ground_truth_labels > 0] = 1
 
-    pixel_auroc = metrics.roc_auc_score(
-        pixel_ground_truth_labels, pixel_prediction
-    )
+    pixel_auroc = metrics.roc_auc_score(pixel_ground_truth_labels, pixel_prediction)
 
     return {"pixel-auroc": pixel_auroc}

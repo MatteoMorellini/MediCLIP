@@ -19,17 +19,19 @@ for subfolder in sorted(os.listdir(source_root)):
             first_file = files[0]  # Get the first file in sorted order
             source_file = os.path.join(subfolder_path, first_file)
             destination_file = os.path.join(destination_folder, first_file)
-            
+
             # Copy the file to the new location
             shutil.copy2(source_file, destination_file)
-            
+
             # Append file details to JSON list
-            json_data.append({
-                "filename": destination_file,
-                "label": 1,
-                "label_name": "abnormal",
-                "clsname": "abnormal"
-            })
+            json_data.append(
+                {
+                    "filename": destination_file,
+                    "label": 1,
+                    "label_name": "abnormal",
+                    "clsname": "abnormal",
+                }
+            )
 
 # Write JSON data to a file
 json_path = os.path.join(destination_folder, "metadata.json")
