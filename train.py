@@ -46,17 +46,19 @@ def make_vision_takens_info(model, model_cfg, layers_out):
 
     img_feature, tokens = model.encode_image(img, layers_out)
 
-    if len(tokens[0].shape) == 3:
+    if len(tokens[0].shape) == 3: # (B, N, C)
+        # number of tokens along one side of the square grid
         model.token_size = [int(math.sqrt(token.shape[1] - 1)) for token in tokens]
+        # number of channels - feature dimensionality of each token embedding
         model.token_c = [token.shape[-1] for token in tokens]
-    else:
+    else: # (B, C, H, W)
         model.token_size = [token.shape[2] for token in tokens]
         model.token_c = [token.shape[1] for token in tokens]
 
     model.embed_dim = model_cfg["embed_dim"]
     print(
         "model token size is {}".format(model.token_size),
-        " model token dim is {}".format(model.token_c),
+        "model token dim is {}".format(model.token_c),
     )
 
 
@@ -84,7 +86,7 @@ def main(args):
         os.makedirs(args.config.save_root)
 
     logger = create_logger("logger", os.path.join(args.config.save_root, "logger.log"))
-    logger.info("config: {}".format(pprint.pformat(args)))
+    #logger.info("config: {}".format(pprint.pformat(args)))
 
     necker = Necker(clip_model=model).to(model.device)
     adapter = Adapter(clip_model=model, target=args.config.model_cfg["embed_dim"]).to(
@@ -118,7 +120,6 @@ def main(args):
     )
 
     source = os.path.join(args.config.data_root, args.config.train_dataset)
-    # TODO: do we need to specify mode=train? this opens a sub-question: can we use the same dataset for training and testing?
     if args.patients:
         assert args.config.train_dataset == "brats-met", (
             "patients training supported only for brats-met dataset"
@@ -343,23 +344,24 @@ def train_one_epoch(
 
     for i, input in enumerate(train_dataloader):
         curr_step = start_iter + i
-
         images = input["image"].to(clip_model.device)
-
         gt_mask = input["mask"].to(clip_model.device)
-
+        
         with torch.no_grad():
             _, image_tokens = clip_model.encode_image(
                 images, out_layers=args.config.layers_out
             )
+            # align shape
             image_features = necker(image_tokens)
 
+        # adapter outside 'torch.no_grad' since its parameters are updated 
+        # align number of channels
         vision_adapter_features = adapter(image_features)
-        propmt_adapter_features = prompt_maker(vision_adapter_features)
-        anomaly_map = map_maker(vision_adapter_features, propmt_adapter_features)
-
+        prompt_adapter_features = prompt_maker(vision_adapter_features)
+        anomaly_map = map_maker(vision_adapter_features, prompt_adapter_features)
         loss = []
-
+        # S_n and S_a have shapes [B, H, W]
+        # then anomaly_map has shape [B, 2, H, W] where [0] is S_n and [1] is S_a
         loss.append(focal_criterion(anomaly_map, gt_mask))
         loss.append(dice_criterion(anomaly_map[:, 1, :, :], gt_mask))
 
@@ -417,9 +419,8 @@ def validate(
                 B, _, H, W = anomaly_map.shape
 
                 anomaly_map = anomaly_map[:, 1, :, :]
-                anomaly_gt = input["mask"].squeeze(
-                    0
-                )  # no need to keep the batch dimension with batch_size = 1
+                # no need to keep the batch dimension with batch_size = 1
+                anomaly_gt = input["mask"].squeeze(0)  
 
                 anomaly_maps.append(anomaly_map.cpu().numpy())
                 anomaly_gts.append(anomaly_gt.cpu().numpy())

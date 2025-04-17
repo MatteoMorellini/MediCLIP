@@ -18,6 +18,7 @@ class Adapter(nn.Module):
             )
 
     def forward(self, tokens):
+        print(len(tokens))
         vision_features = []
         for i, token in enumerate(tokens):
             vision_feature = (

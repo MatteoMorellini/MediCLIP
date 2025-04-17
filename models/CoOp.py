@@ -41,9 +41,12 @@ class PromptLearner(nn.Module):
     ):
         super().__init__()
 
-        ctx_dim = clip_model.ln_final.weight.shape[0]  #
+        ctx_dim = clip_model.ln_final.weight.shape[0]  
 
         self.ctx = {}
+        
+        # prompts['normal'] = ['normal', 'healthy', 'negative'...]
+        # prompts['abnormal'] = ['abnormal', 'anomaly', 'positive'...]
 
         for cls in prompts:
             for position in class_token_position:
@@ -210,10 +213,15 @@ class PromptMaker(nn.Module):
         self.text_encoder = TextEncoder(clip_model)
 
     def forward(self, image_features):
+        # returns a dict mapping each class name (cls) to its current sequence
+        # of learnable token embeddings 
         prompts = self.prompt_learner()
+        # prompts.keys() = ['normal', 'abnormal']
         tokenized_prompts = self.tokenized_prompts
         text_features = []
-
+        
+        # for-cycle iterates over the 'meaning' of prompts
+        # e.g. first cycle returns the archeotype of normal class
         for cls in prompts:
             class_embedding = self.text_encoder(
                 prompts[cls],

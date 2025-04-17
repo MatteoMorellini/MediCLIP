@@ -239,15 +239,15 @@ def validate(
         )
         image_features = necker(image_tokens)
         vision_adapter_features = adapter(image_features)
-        propmt_adapter_features = prompt_maker(vision_adapter_features)
+        prompt_adapter_features = prompt_maker(vision_adapter_features)
         # compare vision and prompt features to get anomaly heatmaps
-        anomaly_map = map_maker(vision_adapter_features, propmt_adapter_features)
+        anomaly_map = map_maker(vision_adapter_features, prompt_adapter_features)
 
         B, _, H, W = anomaly_map.shape  # _ is the number of channels: Sn and Sa
         anomaly_map = anomaly_map[:, 1, :, :]  # keep only the anomaly map
 
         pixel_preds.append(anomaly_map)  # append since we have a whole matrix
-        # @todo: check if this is correct
+        # todo: check if this is correct
         if dataset_name == "brats-met":
             anomaly_score = torch.tensor([float(torch.max(anomaly_map))])
         else:
