@@ -1,0 +1,16 @@
+train/normal/image_10.jpg
+train/normal/image_16.jpg
+train/normal/image_18.jpg
+train/normal/image_16.jpg
+train/normal/image_8.jpg
+train/normal/image_15.jpg
+train/normal/image_16.jpg
+train/normal/image_7.jpg
+train/normal/image_19.jpg
+train/normal/image_25.jpg
+train/normal/image_30.jpg
+train/normal/image_1.jpg
+train/normal/image_18.jpg
+train/normal/image_19.jpg
+train/normal/image_18.jpg
+train/normal/image_19.jpg

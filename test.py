@@ -172,18 +172,22 @@ def main(args):
                 args=args.config,
                 source=os.path.join(args.config.data_root, test_dataset_name),
                 preprocess=preprocess,
+                slice_idx = args.slice_idx,
             )
-            args.config.batch_size = 1
 
         else:
             raise NotImplementedError(
-                "dataset must in ['chexpert','busi','brainmri', 'brats-met] "
+                "dataset must in ['chexpert','busi','brainmri', 'brats-met]"
             )
-
-        # TODO: understand whether batch_size can have a value different from 1
+        
         test_dataloader = DataLoader(
             test_dataset, batch_size=args.config.batch_size, num_workers=1
         )
+        # iterates over batches, which are made by the value returned by getitem
+        # e.g. getitem returns image,label -> dataloader returns batches of images and labels
+        # since here it returns a dict, dataloader returns a dictionary where each
+        # entry is a batch of the corresponding key
+
         results = validate(
             args,
             test_dataset_name,
@@ -194,9 +198,8 @@ def main(args):
             prompt_maker,
             map_maker,
         )
-        if test_dataset_name == "brats-met":
-            return
-        if test_dataset_name != "busi":
+
+        if test_dataset_name not in {'busi', 'brats-met'}:
             print(
                 "{}, image auroc: {:.4f}".format(
                     test_dataset_name, results["image-auroc"]
@@ -227,16 +230,16 @@ def validate(
     pixel_gts = []
 
     image_paths = []
-    for i, input in enumerate(test_dataloader):  # iterate over batches of test images
-        if dataset_name == "brats-met":
-            images = input["image"].squeeze(0).to(clip_model.device)
-        else:
-            images = input["image"].to(clip_model.device)
 
+    # iterate over batches of test images to predict
+    for i, input in enumerate(test_dataloader):  
+        images = input["image"].to(clip_model.device)
+        # images.shape = [8, 3, 224, 224]
         image_paths.extend(input["image_path"])
         _, image_tokens = clip_model.encode_image(
             images, out_layers=args.config.layers_out
         )
+
         image_features = necker(image_tokens)
         vision_adapter_features = adapter(image_features)
         prompt_adapter_features = prompt_maker(vision_adapter_features)
@@ -247,22 +250,18 @@ def validate(
         anomaly_map = anomaly_map[:, 1, :, :]  # keep only the anomaly map
 
         pixel_preds.append(anomaly_map)  # append since we have a whole matrix
-        # todo: check if this is correct
-        if dataset_name == "brats-met":
-            anomaly_score = torch.tensor([float(torch.max(anomaly_map))])
-        else:
-            anomaly_score, _ = torch.max(anomaly_map.view((B, H * W)), dim=-1)
+        anomaly_score, _ = torch.max(anomaly_map.view((B, H * W)), dim=-1)
         image_preds.extend(
             anomaly_score.cpu().numpy().tolist()
         )  # extend since it is a list of scalar
         image_gts.extend(input["is_anomaly"].cpu().numpy().tolist())
 
-        if dataset_name == "busi":
+        if dataset_name == "busi" or dataset_name == "brats-met":
             pixel_gts.append(input["mask"].cpu().numpy())
     # pixel_preds = [Tensor[B, H, W], Tensor[B, H, W], ...] -> Tensor[N, H, W]
 
     pixel_preds_np = [pixel_pred.cpu().numpy() for pixel_pred in pixel_preds]
-    if dataset_name == "brats-met":
+    """if dataset_name == "brats-met":
         pixel_preds = [
             normalization(pixel_pred, args.config.image_size)
             for pixel_pred in pixel_preds
@@ -270,15 +269,18 @@ def validate(
     else:
         pixel_preds = normalization(
             torch.cat(pixel_preds, dim=0), args.config.image_size
+        )"""
+    pixel_preds = normalization(
+            torch.cat(pixel_preds, dim=0), args.config.image_size
         )
 
-    if dataset_name == "busi":
+    if dataset_name == "busi" or dataset_name == "brats-met":
         pixel_gts = np.concatenate(pixel_gts, axis=0)
 
     save_images_root = os.path.join(args.vis_save_root, "{}".format(dataset_name))
     os.makedirs(save_images_root, exist_ok=True)
 
-    if dataset_name == "busi":
+    if dataset_name == "busi" or dataset_name == "brats-met":
         iter = tqdm(
             zip(image_paths, image_gts, pixel_preds, pixel_gts),
             total=len(image_paths),
@@ -293,8 +295,9 @@ def validate(
             leave=False,
         )
 
+    # generate and save visualization images, one image per iteration
     for i, data in enumerate(iter):
-        if dataset_name == "busi":
+        if dataset_name == "busi" or dataset_name == "brats-met":
             image_path, image_gt, pixel_pred, pixel_gt = data
         else:
             image_path, image_gt, pixel_pred = data
@@ -302,7 +305,7 @@ def validate(
         _, image_name = os.path.split(image_path)
         image_name = image_name.split(".")[0]
 
-        if dataset_name == "brats-met":
+        """if dataset_name == "brats-met":
             fmri = nib.load(image_path)
 
             n_slices = fmri.shape[-1]
@@ -341,41 +344,35 @@ def validate(
                 data_array, affine=np.eye(4)
             )  # Identity affine matrix
             nib.save(nii_image, os.path.join(save_images_root, f"{image_name}.nii.gz"))
-        else:
-            image = Image.open(image_path).convert("RGB")
-            image = image.resize((args.config.image_size, args.config.image_size))
-            image = np.array(image).astype(np.uint8)
+        else:"""
+        image = Image.open(image_path).convert("RGB")
+        image = image.resize((args.config.image_size, args.config.image_size))
+        image = np.array(image).astype(np.uint8)
 
-            heat = show_cam_on_image(image / 255, pixel_pred, use_rgb=True)
+        heat = show_cam_on_image(image / 255, pixel_pred, use_rgb=True)
 
-            label_ = "normal" if image_gt == 0 else "abnormal"
+        label_ = "normal" if image_gt == 0 else "abnormal"
 
-            merge = [image, heat]
+        merge = [image, heat]
 
-            if dataset_name == "busi":
-                pixel_gt = np.repeat(np.expand_dims(pixel_gt, axis=-1), 3, axis=-1)
-                merge.append(pixel_gt * 255)
+        if dataset_name == "busi":
+            pixel_gt = np.repeat(np.expand_dims(pixel_gt, axis=-1), 3, axis=-1)
+            merge.append(pixel_gt * 255)
 
-            img = Image.fromarray(np.concatenate(merge, axis=1).astype(np.uint8))
-            print(
-                os.path.join(
-                    save_images_root, "{}_{}_{}.jpg".format(i, label_, image_name)
-                )
+        img = Image.fromarray(np.concatenate(merge, axis=1).astype(np.uint8))
+
+        img.save(
+            os.path.join(
+                save_images_root, "{}_{}_{}.jpg".format(i, label_, image_name)
             )
-            img.save(
-                os.path.join(
-                    save_images_root, "{}_{}_{}.jpg".format(i, label_, image_name)
-                )
-            )
+        )
 
-    # TODO: add brats-met
-    if dataset_name != "brats-met":
-        metric = compute_imagewise_metrics(image_preds, image_gts)
-        if (
-            dataset_name == "busi"
-        ):  # for this specific dataset, since we have a ground truth mask, we can compute pixel-wise metrics
-            metric.update(compute_pixelwise_metrics(pixel_preds_np, pixel_gts))
-        return metric
+    metric = compute_imagewise_metrics(image_preds, image_gts)
+    if (
+        dataset_name == "busi" or dataset_name == "brats-met"
+    ):  # for these datasets, since we have a ground truth mask, we can compute pixel-wise metrics
+        metric.update(compute_pixelwise_metrics(pixel_preds_np, pixel_gts))
+    return metric
 
 
 if __name__ == "__main__":
@@ -383,6 +380,7 @@ if __name__ == "__main__":
     parser.add_argument("--config_path", type=str, help="model configs")
     parser.add_argument("--checkpoint_path", type=str, help="the checkpoint path")
     parser.add_argument("--vis_save_root", type=str, default="vis_results")
+    parser.add_argument("--slice_idx", type=int, default=0)
     args = parser.parse_args()
     torch.multiprocessing.set_start_method("spawn")
     main(args)

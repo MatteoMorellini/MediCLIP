@@ -75,10 +75,17 @@ class TrainDataset(data.Dataset):
         )
         choice_aug = choice_aug[0]
         image, mask = choice_aug(image)
+        
+        """os.makedirs('./transformed_images', exist_ok=True)
+        img = Image.fromarray(image.astype(np.uint8))
 
+        save_path = Path(f"./transformed_images") / f"{index}.png"
+        img.save(save_path)
+        print("transformation applied")"""
+        
         image = Image.fromarray(image.astype(np.uint8)).convert("RGB")
         image = self.transform(image)
-
+        
         mask = torch.from_numpy(mask)
 
         return {"image": image, "mask": mask}
@@ -91,7 +98,8 @@ class TrainDataset(data.Dataset):
                 meta_info = filter_data(
                     meta_info
                 )  # Ensure that the model focuses on learning the characteristics of healthy slices
-
+            # ? no k-shot selection?
+            # todo: implement full shot
             return meta_info[mode]
         else:
             data_to_iterate = []
@@ -121,25 +129,25 @@ class TrainDataset(data.Dataset):
         for cls_name in self.cls_names:
             if mode == "train":
                 if self.args.train_dataset == "brats-met":
-                    data_tmp = meta_info[
-                        cls_name
-                    ]  #  Retrieve all data for the current class
+                    #  Retrieve all data for the current class
+                    data_tmp = meta_info[cls_name]  
                 else:
                     data_tmp = meta_info
-                indices = torch.randint(
-                    0, len(data_tmp), (k_shot,)
-                )  # Randomly select k_shot samples
+                # Randomly select k_shot samples
+                indices = torch.randint(0, len(data_tmp), (k_shot,)) 
+                # Clean the file before writing
+                with open(save_dir, "w") as f:
+                    pass
                 for i in range(len(indices)):
                     image = data_tmp[indices[i]]
                     # image_path = {self.__image_path_key: image[self.__image_path_key]}
                     data_all.append(image[self.__image_path_key])
-                    with open(
-                        save_dir, "a"
-                    ) as f:  # Write the image path of the selected samples to a file
+                    # Write the image path of the selected samples to a file
+                    with open(save_dir, "a") as f:  
                         f.write(image[self.__image_path_key] + "\n")
-                        # This creates a file with the paths of the selected samples, useful for reproducibility
+                    # This creates a file with the paths of the selected samples, useful for reproducibility
             else:
-                # @TODO: data_all is now a list of img_paths and not dictionaries
+                # TODO: data_all is now a list of img_paths and not dictionaries
                 data_all.extend(
                     meta_info[cls_name]
                 )  # for testing, all samples are used

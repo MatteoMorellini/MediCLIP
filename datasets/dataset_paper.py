@@ -19,6 +19,8 @@ from medsyn.tasks import (
     IdentityTask,
 )
 
+# todo: merge in a unique file
+
 
 class TrainDataset(torch.utils.data.Dataset):
     def __init__(
@@ -187,6 +189,7 @@ class BrainMRITestDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         info = self.data_to_iterate[idx]
         image_path = os.path.join(self.source, "images", info["filename"])
+
         image = (
             PIL.Image.open(image_path)
             .convert("RGB")
@@ -195,6 +198,7 @@ class BrainMRITestDataset(torch.utils.data.Dataset):
                 PIL.Image.Resampling.BILINEAR,
             )
         )
+        
         mask = np.zeros((self.args.image_size, self.args.image_size), dtype=float)
         image = self.transform_img(image)
         mask = torch.from_numpy(mask)
@@ -236,7 +240,6 @@ class BusiTestDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         info = self.data_to_iterate[idx]
         image_path = os.path.join(self.source, "images", info["filename"])
-
         image = (
             PIL.Image.open(image_path)
             .convert("RGB")
@@ -290,84 +293,69 @@ class BratsMetTestDataset(torch.utils.data.Dataset):
         args,
         source,
         preprocess,
+        slice_idx,
         **kwargs,
     ):
         super().__init__()
         self.args = args
         self.source = source
         self.transform_img = preprocess
+        self.slice_idx = slice_idx
         self.data_to_iterate = self.get_image_data()
 
     def __getitem__(self, idx):
-        info = self.data_to_iterate[idx]
+        info = self.data_to_iterate[idx]        
 
-        dir_path = Path(self.source) / "images/test/abnormal/" / info["filename"]
 
-        image_path = dir_path / f"{info['filename']}-{self.args.mod}.nii.gz"
-        mask_path = dir_path / f"{info['filename']}-seg.nii.gz"
+        # ! currently removed normalization
+        # check whether we need it, my fear is that normalizing from 0 to 1 
+        # will create anomalies with very low values
+        # TODO: normalize per volume instead of per slice
+        """slice_norm = (slice - np.min(slice)) / (
+            np.max(slice) - np.min(slice) + 1e-8
+        )  # Avoid division by zero
+        slice = (slice_norm * 255).astype(np.uint8)"""
+        
+        # self.source = data/brats-met
+        # info['filename'] = test/abnormal/PATIENT
+        image_path = os.path.join(self.source, "images", info["filename"], 't2w', str(self.slice_idx).zfill(3)+'.jpeg')    
 
-        data = nib.load(image_path)
-        mask_scan = nib.load(mask_path) if info.get("mask", None) else None
-        slices = []
-        masks = []
-        n_slices = data.shape[-1]
-        _, image_name = os.path.split(image_path)
-        image_name = image_name.split(".")[0]
-        """for _ in range(n_slices):
-            if np.max(data.get_fdata()[:, :, _]):
-                starting_point = _ + 50
-                break
-        for _ in range(self.args.slices_per_volume):
-            index = starting_point + (_ * 10) # 20 E' UN VALORE ARBITRARIO DA CAMBIARE
-            slice = data.get_fdata()[:, :, index]"""
-        for _ in range(n_slices - 1):
-            slice = data.get_fdata()[:, :, _]
-            slice_norm = (slice - np.min(slice)) / (
-                np.max(slice) - np.min(slice) + 1e-8
-            )  # Avoid division by zero
-            slice = (slice_norm * 255).astype(np.uint8)
-
-            slice = (
-                PIL.Image.fromarray(slice)
-                .convert("RGB")
-                .resize(
-                    (self.args.image_size, self.args.image_size),
-                    PIL.Image.Resampling.BILINEAR,
-                )
+        image = (
+            PIL.Image.open(image_path)
+            .convert("RGB")
+            .resize(
+                (self.args.image_size, self.args.image_size),
+                PIL.Image.Resampling.BILINEAR,
             )
-            slices.append(slice)
-
-            if info.get("mask", None):
-                mask = mask_scan.get_fdata()[:, :, _]
-                mask = (
-                    PIL.Image.fromarray(mask)
-                    .convert("L")
-                    .resize(
-                        (self.args.image_size, self.args.image_size),
-                        PIL.Image.Resampling.NEAREST,
-                    )
-                )
-                mask = np.array(mask).astype(float) / 255.0
-                mask[mask != 0.0] = 1.0
-            else:
-                mask = np.zeros(
-                    (self.args.image_size, self.args.image_size), dtype=float
-                )
-            masks.append(mask)
-
-        slices = [
-            self.transform_img(slice).unsqueeze(0) for slice in slices
-        ]  # transform to be digested by openCLIP
-        slices = torch.cat(slices, dim=0)
-        masks = torch.cat(
-            [torch.from_numpy(mask).unsqueeze(0) for mask in masks], dim=0
         )
 
+        mask_path = os.path.join(self.source, 'images', info["filename"], 'seg', str(self.slice_idx).zfill(3)+'.jpeg')
+
+        if os.path.exists(mask_path):
+            mask = os.path.join(self.source, "images", info["filename"], 'seg', str(self.slice_idx).zfill(3)+'.jpeg')
+            mask = (
+                PIL.Image.open(mask)
+                .convert("L")
+                .resize(
+                    (self.args.image_size, self.args.image_size),
+                    PIL.Image.Resampling.NEAREST,
+                )
+            )
+            mask = np.array(mask).astype(float) / 255.0
+            mask[mask != 0.0] = 1.0
+        else:
+            mask = np.zeros((self.args.image_size, self.args.image_size), dtype=float)
+
+        image = self.transform_img(image)
+        mask = torch.from_numpy(mask)
+        # ? can be improved by checking for at least 1 one?
+        num_ones = (mask == 1).sum().item()
+
         return {
-            "image": slices,
-            "mask": masks,
-            "classname": info["clsname"],
-            "is_anomaly": info["label"],
+            "image": image,
+            "mask": mask,
+            "classname": 'abnormal' if num_ones > 0 else 'normal',
+            "is_anomaly": 1 if num_ones > 0 else 0,
             "image_path": str(image_path),
         }
 
