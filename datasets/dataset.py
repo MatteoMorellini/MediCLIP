@@ -6,6 +6,7 @@ import numpy as np
 import torch
 import os
 from pathlib import Path
+from collections import defaultdict
 from medsyn.tasks import (
     CutPastePatchBlender,
     SmoothIntensityChangeTask,
@@ -15,8 +16,7 @@ from medsyn.tasks import (
     IdentityTask,
 )
 
-
-def filter_data(meta_info):  # Filter out anomaly slices for few-shot learning
+"""def filter_data(meta_info):  # Filter out anomaly slices for few-shot learning
     filtered_meta_info = {
         split: {
             category: [item for item in items if item.get("anomaly") == 0]
@@ -26,6 +26,17 @@ def filter_data(meta_info):  # Filter out anomaly slices for few-shot learning
     }
     return filtered_meta_info
 
+def filter_data(data_to_iterate):
+    data_to_iterate = [slice for slice in data_to_iterate if slice.get('anomaly')==0]"""
+
+def sample_per_slice(data_to_iterate, k_shot):
+    all_samples = []
+    for key in data_to_iterate.keys():
+        values = data_to_iterate[key]
+        if len(values) < k_shot:
+            raise ValueError(f"Not enough elements to sample {k_shot} from key {key}")
+        all_samples.extend(random.sample(values, k_shot))
+    return all_samples
 
 class TrainDataset(data.Dataset):
     def __init__(
@@ -54,6 +65,7 @@ class TrainDataset(data.Dataset):
         assert sum(self.augs_pro) == 1.0
         self.length = len(self.data_all)
 
+
     def __len__(self):
         return self.length
 
@@ -61,12 +73,12 @@ class TrainDataset(data.Dataset):
         img_path = self.data_all[
             index
         ]  # data_all is a list of dictionaries for each sample
-
-        img_path = os.path.join(self.root, "images", img_path)
+        if self.args.train_dataset != 'brats-met':
+            img_path = os.path.join(self.root, "images", img_path)
         image = self.read_image(img_path)
 
-        # * During traning we apply the augmentation to the image, hence we don't care about the original mask
-
+        # During traning we apply the augmentation to the image, hence we don't care about the original mask
+        # Augmentation applied EACH time the item is retrieved
         choice_aug = np.random.choice(
             a=[aug for aug in self.augs],
             p=[pro for pro in self.augs_pro],
@@ -76,15 +88,10 @@ class TrainDataset(data.Dataset):
         choice_aug = choice_aug[0]
         image, mask = choice_aug(image)
         
-        """os.makedirs('./transformed_images', exist_ok=True)
-        img = Image.fromarray(image.astype(np.uint8))
-
-        save_path = Path(f"./transformed_images") / f"{index}.png"
-        img.save(save_path)
-        print("transformation applied")"""
-        
         image = Image.fromarray(image.astype(np.uint8)).convert("RGB")
         image = self.transform(image)
+
+        # ? normalization
         
         mask = torch.from_numpy(mask)
 
@@ -92,15 +99,24 @@ class TrainDataset(data.Dataset):
 
     def _get_meta_info(self, mode, k_shot):
         if self.args.train_dataset == "brats-met":
-            meta_info = json.load(open(f"{self.root}/samples/meta.json", "r"))
-
-            if k_shot > 0:  # Filter out anomaly slices for few-shot learning
-                meta_info = filter_data(
-                    meta_info
-                )  # Ensure that the model focuses on learning the characteristics of healthy slices
-            # ? no k-shot selection?
-            # todo: implement full shot
-            return meta_info[mode]
+            # ? how to intend random sample for patients:
+            # option 1 - shuffle the dictionary and take the first K healthy slice
+            # option 2 - take all ith healthy slices and select K out of them
+            # I prefer option 2 since it's easier 
+            # todo: change directory of meta
+            meta_info = json.load(open(f"{self.root}/Training/meta.json", "r"))
+            data_to_iterate = defaultdict(list)
+            # iterate through patients
+            for key, value in meta_info['train']['brain'].items():
+                # iterate through slices of a patient
+                for id, slice in value.items():
+                    if int(id) % self.args.distance_per_slice == 0 and slice.get('anomaly')==0:
+                        data_to_iterate[id].append(slice)
+                #data_to_iterate.append(value[str(slice_idx).zfill(3)])
+            if k_shot != -1: 
+                data_to_iterate = sample_per_slice(data_to_iterate, k_shot)
+            # Filter out anomaly slices for few-shot learning
+            #meta_info = filter_data(data_to_iterate)  
         else:
             data_to_iterate = []
             with open(os.path.join(self.root, "samples", "train.json"), "r") as f_r:
@@ -109,7 +125,8 @@ class TrainDataset(data.Dataset):
                     data_to_iterate.append(meta)
             if k_shot != -1:
                 data_to_iterate = random.sample(data_to_iterate, k_shot)
-            return data_to_iterate
+
+        return data_to_iterate
 
     def _get_cls_names(self, meta_info, mode, save_dir):
         if mode == "train":
@@ -128,18 +145,9 @@ class TrainDataset(data.Dataset):
         data_all = []
         for cls_name in self.cls_names:
             if mode == "train":
-                if self.args.train_dataset == "brats-met":
-                    #  Retrieve all data for the current class
-                    data_tmp = meta_info[cls_name]  
-                else:
-                    data_tmp = meta_info
-                # Randomly select k_shot samples
-                indices = torch.randint(0, len(data_tmp), (k_shot,)) 
                 # Clean the file before writing
-                with open(save_dir, "w") as f:
-                    pass
-                for i in range(len(indices)):
-                    image = data_tmp[indices[i]]
+                with open(save_dir, "w"): pass
+                for image in meta_info:
                     # image_path = {self.__image_path_key: image[self.__image_path_key]}
                     data_all.append(image[self.__image_path_key])
                     # Write the image path of the selected samples to a file

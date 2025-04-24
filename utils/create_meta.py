@@ -1,12 +1,19 @@
 from pathlib import Path
 import json
 from PIL import Image
+from collections import defaultdict
 
-meta = {"train": {"brain": []}, "test": {"brain": []}}
+# Generates a JSON metadata file (meta.json) for all patients in the 
+# Training directory of the BraTS-MET dataset.
 
-brats_train_dir = Path("../data/brats-met/images/train/abnormal")
+meta = {"train": {"brain": {}}, "test": {"brain": {}}}
+
+meta_train = defaultdict(dict)
+
+brats_train_dir = Path("../data/brats-met/Training/")
 
 for patient in brats_train_dir.iterdir():
+
     t2w = patient / "t2w"
     seg = patient / "seg"
 
@@ -22,7 +29,9 @@ for patient in brats_train_dir.iterdir():
             "specie_name": None,
             "anomaly": anomaly,
         }
-        meta["train"]["brain"].append(image)
+        meta_train[patient.name][mask.name.split('.')[0]] = image
 
-with open("meta.json", "w") as f:
+meta["train"]["brain"] = meta_train
+
+with open("../data/brats-met/Training/meta.json", "w") as f:
     json.dump(meta, f, indent=4)

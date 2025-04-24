@@ -1,0 +1,12 @@
+vis_results/
+path/
+myenv/
+data/
+.vscode/
+.history/
+*.pkl
+path/to/venv
+.DS_Store
+open_clip/
+.*/
+fewshot/

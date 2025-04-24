@@ -139,6 +139,8 @@ def main(args):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    # ? how is zero-shot feasible without training the adapters?
+
     checkpoints = torch.load(
         args.checkpoint_path, map_location=str(device)
     )  # Pass device as string
@@ -380,7 +382,7 @@ if __name__ == "__main__":
     parser.add_argument("--config_path", type=str, help="model configs")
     parser.add_argument("--checkpoint_path", type=str, help="the checkpoint path")
     parser.add_argument("--vis_save_root", type=str, default="vis_results")
-    parser.add_argument("--slice_idx", type=int, default=0)
+    parser.add_argument("--slice_idx", type=int, default=100)
     args = parser.parse_args()
     torch.multiprocessing.set_start_method("spawn")
     main(args)

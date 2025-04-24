@@ -9,6 +9,7 @@ from PIL import Image
 import numpy as np
 import nibabel as nib
 from pathlib import Path
+import math
 
 from medsyn.tasks import (
     CutPastePatchBlender,
@@ -20,6 +21,7 @@ from medsyn.tasks import (
 )
 
 # todo: merge in a unique file
+# todo: fix folders for the others test set
 
 
 class TrainDataset(torch.utils.data.Dataset):
@@ -50,7 +52,6 @@ class TrainDataset(torch.utils.data.Dataset):
             size=(1,),
             replace=False,
         )[0]
-        print(type(image), image.shape)
         image, mask = choice_aug(image)
         image = Image.fromarray(image.astype(np.uint8)).convert("RGB")
         image = self.transform_img(image)
@@ -305,20 +306,14 @@ class BratsMetTestDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         info = self.data_to_iterate[idx]        
-
-
-        # ! currently removed normalization
-        # check whether we need it, my fear is that normalizing from 0 to 1 
-        # will create anomalies with very low values
-        # TODO: normalize per volume instead of per slice
-        """slice_norm = (slice - np.min(slice)) / (
-            np.max(slice) - np.min(slice) + 1e-8
-        )  # Avoid division by zero
-        slice = (slice_norm * 255).astype(np.uint8)"""
-        
         # self.source = data/brats-met
         # info['filename'] = test/abnormal/PATIENT
-        image_path = os.path.join(self.source, "images", info["filename"], 't2w', str(self.slice_idx).zfill(3)+'.jpeg')    
+        if self.slice_idx == -1:
+            image_path = os.path.join(self.source, info["filename"], 't2w', str(info['slice']).zfill(3)+'.jpeg')  
+            mask_path = os.path.join(self.source, info["filename"], 'seg', str(info['slice']).zfill(3)+'.jpeg')
+        else:
+            image_path = os.path.join(self.source, info["filename"], 't2w', str(self.slice_idx).zfill(3)+'.jpeg')    
+            mask_path = os.path.join(self.source, info["filename"], 'seg', str(self.slice_idx).zfill(3)+'.jpeg')
 
         image = (
             PIL.Image.open(image_path)
@@ -328,13 +323,9 @@ class BratsMetTestDataset(torch.utils.data.Dataset):
                 PIL.Image.Resampling.BILINEAR,
             )
         )
-
-        mask_path = os.path.join(self.source, 'images', info["filename"], 'seg', str(self.slice_idx).zfill(3)+'.jpeg')
-
         if os.path.exists(mask_path):
-            mask = os.path.join(self.source, "images", info["filename"], 'seg', str(self.slice_idx).zfill(3)+'.jpeg')
             mask = (
-                PIL.Image.open(mask)
+                PIL.Image.open(mask_path)
                 .convert("L")
                 .resize(
                     (self.args.image_size, self.args.image_size),
@@ -348,14 +339,12 @@ class BratsMetTestDataset(torch.utils.data.Dataset):
 
         image = self.transform_img(image)
         mask = torch.from_numpy(mask)
-        # ? can be improved by checking for at least 1 one?
         num_ones = (mask == 1).sum().item()
-
         return {
             "image": image,
             "mask": mask,
-            "classname": 'abnormal' if num_ones > 0 else 'normal',
-            "is_anomaly": 1 if num_ones > 0 else 0,
+            "classname": 'abnormal' if num_ones > 10 else 'normal',
+            "is_anomaly": 1 if num_ones > 10 else 0,
             "image_path": str(image_path),
         }
 
@@ -364,8 +353,14 @@ class BratsMetTestDataset(torch.utils.data.Dataset):
 
     def get_image_data(self):
         data_to_iterate = []
-        with open(os.path.join(self.source, "samples", "test.json"), "r") as f_r:
-            for line in f_r:
-                meta = json.loads(line)
-                data_to_iterate.append(meta)
+        with open(os.path.join(self.source, 'Testing', "test.json"), 'r') as f:
+            data = json.load(f)
+        for row in data:
+            if self.slice_idx == -1:
+                # necessary starting above 0 since AUROC would be impossible with only negative masks
+                for slice in range(0, 155, int(self.args.distance_per_slice)*6):
+                    row['slice'] = slice
+                    data_to_iterate.append(row.copy())
+            else:
+                data_to_iterate.append(row)
         return data_to_iterate

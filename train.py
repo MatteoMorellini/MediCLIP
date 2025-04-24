@@ -14,6 +14,7 @@ from utils.misc_helper import (
     compute_pixelwise_metrics,
     get_current_time,
     create_logger,
+    set_seed
 )
 from torch.utils.data import DataLoader
 from models.MapMaker import MapMaker
@@ -29,9 +30,9 @@ import pprint
 from tqdm import tqdm
 import multiprocessing
 import numpy as np
+import random
 
 warnings.filterwarnings("ignore")
-
 
 @torch.no_grad()
 def make_vision_takens_info(model, model_cfg, layers_out):
@@ -67,6 +68,8 @@ def main(args):
 
     with open(args.config_path) as f:
         args.config = EasyDict(yaml.load(f, Loader=yaml.FullLoader))
+
+    set_seed(seed=args.config.random_seed)
 
     model, preprocess, model_cfg = open_clip.create_model_and_transforms(
         args.config.model_name, args.config.image_size, device=device
@@ -141,6 +144,8 @@ def main(args):
             transform=preprocess,
             k_shot=args.k_shot,
         )
+
+    print(f'train dataset has {len(train_dataset)} elements')
     num_workers = max(1, multiprocessing.cpu_count() - 1)
 
     train_dataloader = DataLoader(
@@ -180,6 +185,7 @@ def main(args):
                 args=args.config,
                 source=os.path.join(args.config.data_root, test_dataset_name),
                 preprocess=preprocess,
+                slice_idx=-1
             )
         else:
             raise NotImplementedError(
@@ -212,6 +218,7 @@ def main(args):
 
     for epoch in range(0, args.config.epoch):
         last_iter = epoch * len(train_dataloader)
+        
         train_one_epoch(
             args,
             train_dataloader,
@@ -225,8 +232,8 @@ def main(args):
             prompt_maker,
             map_maker,
         )
-
-        if (epoch + 1) % args.config.val_freq_epoch == 0:
+        
+        if (epoch+1) % args.config.val_freq_epoch == 0:
             results = validate(
                 args,
                 test_dataloaders,
@@ -403,9 +410,7 @@ def validate(
 
         with torch.no_grad():
             for i, input in enumerate(tqdm(test_dataloader, desc=test_dataset_name)):
-                images = (
-                    input["image"].to(clip_model.device).squeeze(0)
-                )  # no need to keep the batch dimension with batch_size = 1
+                images = (input["image"].to(clip_model.device))  
                 _, image_tokens = clip_model.encode_image(
                     images, out_layers=args.config.layers_out
                 )
@@ -419,8 +424,8 @@ def validate(
                 B, _, H, W = anomaly_map.shape
 
                 anomaly_map = anomaly_map[:, 1, :, :]
-                # no need to keep the batch dimension with batch_size = 1
-                anomaly_gt = input["mask"].squeeze(0)  
+                
+                anomaly_gt = input["mask"] 
 
                 anomaly_maps.append(anomaly_map.cpu().numpy())
                 anomaly_gts.append(anomaly_gt.cpu().numpy())
@@ -429,14 +434,7 @@ def validate(
 
                 image_scores.extend(anomaly_scores.cpu().numpy().tolist())
 
-                if test_dataset_name == "brats-met":
-                    for mask in anomaly_gt:
-                        if (mask == 0).all():
-                            image_labels.append(0)
-                        else:
-                            image_labels.append(1)
-                else:
-                    image_labels.extend(input["is_anomaly"].cpu().numpy().tolist())
+                image_labels.extend(input["is_anomaly"].cpu().numpy().tolist())
 
         metric = compute_imagewise_metrics(image_scores, image_labels)
 
@@ -458,6 +456,7 @@ if __name__ == "__main__":
         default=False,
         help="whether to k-shot refers to patients",
     )
+    #parser.add_argument("--slice_idx", type=int, default=100)
     args = parser.parse_args()
     torch.multiprocessing.set_start_method("spawn")
     main(args)

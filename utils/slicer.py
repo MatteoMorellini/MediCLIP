@@ -6,6 +6,8 @@ import nibabel as nib
 from PIL import Image
 import json
 
+# useful when you have the initial dataset and you want to divide in train and test
+
 mod = "t2w"
 seg = "seg"
 
@@ -33,7 +35,6 @@ def save_slices(patient_dir, image_data, mod):
 
 patients = list(dataset_path.glob("*BraTS*"))
 
-random.seed(42)
 random.shuffle(patients)
 
 # Split 70/30

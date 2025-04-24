@@ -9,7 +9,7 @@ epoch: 200
 batch_size: 8
 
 print_freq_step: 10
-val_freq_epoch: 1
+val_freq_epoch: 5
 
 image_size: 224
 model_name: ViT-L-14
