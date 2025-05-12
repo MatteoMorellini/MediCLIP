@@ -111,7 +111,8 @@ class TrainDataset(data.Dataset):
             for key, value in meta_info['train']['brain'].items():
                 # iterate through slices of a patient
                 for id, slice in value.items():
-                    if int(id) % self.args.distance_per_slice == 0 and slice.get('anomaly')==0:
+                    if int(id) == 50 and slice.get('anomaly') == 0:
+                    #if int(id) % self.args.distance_per_slice == 0 and slice.get('anomaly')==0:
                         data_to_iterate[id].append(slice)
                 #data_to_iterate.append(value[str(slice_idx).zfill(3)])
             if k_shot != -1: 
