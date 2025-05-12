@@ -145,7 +145,6 @@ def main(args):
             k_shot=args.k_shot,
         )
 
-    print(f'train dataset has {len(train_dataset)} elements')
     num_workers = max(1, multiprocessing.cpu_count() - 1)
 
     train_dataloader = DataLoader(
@@ -369,9 +368,27 @@ def train_one_epoch(
         loss = []
         # S_n and S_a have shapes [B, H, W]
         # then anomaly_map has shape [B, 2, H, W] where [0] is S_n and [1] is S_a
+    
+        """function applies a softmax across the class dimension (dim=1) to turn 
+        the [B, 2, H, W] into probabilities per class per pixel.
+        Then, for each pixel:
+            It extracts the probability for the true class (using gt_mask)
+        """
+        # at the beginning the weights are around 0, hence the model almost always predicts 0
+        # since a mask is almost all 0s, the error is already low
         loss.append(focal_criterion(anomaly_map, gt_mask))
+        #print(f"focal loss: {loss[-1]}")
+        """Unlike Focal Loss or CrossEntropyLoss, which operate on probabilities 
+        (and therefore penalize over- or under-confidence), Dice Loss works on 
+        soft masks and is focused on overlap between prediction and ground truth.
+        It doesn't care that much about the confidence:
+            - In CrossEntropy/Focal Loss, confidence hugely change the loss depending 
+            on how close they are to the target (e.g., log(0.95) vs log(0.55) is very different).
+            - In Dice Loss, it just gets multiplied by the ground truth and added up
+        """
+        # ? investigate changes to this loss function
         loss.append(dice_criterion(anomaly_map[:, 1, :, :], gt_mask))
-
+        #print(f"dice loss: {loss[-1]}")
         loss = torch.sum(torch.stack(loss))
         loss_meter.update(loss.item())
 
@@ -456,7 +473,6 @@ if __name__ == "__main__":
         default=False,
         help="whether to k-shot refers to patients",
     )
-    #parser.add_argument("--slice_idx", type=int, default=100)
     args = parser.parse_args()
     torch.multiprocessing.set_start_method("spawn")
     main(args)

@@ -1,0 +1,220 @@
+[2025-05-12 09:19:18,946][       train.py][line: 102][    INFO] load CoOp
+[2025-05-12 09:19:19,139][       train.py][line: 200][    INFO] train data (brats-met) len 31
+[2025-05-12 09:19:19,139][       train.py][line: 205][    INFO] test data (brats-met) len 300
+[2025-05-12 09:19:19,140][       train.py][line: 212][    INFO] anomaly syn task is CutpasteTask, sampling probability is 0.25
+[2025-05-12 09:19:19,140][       train.py][line: 212][    INFO] anomaly syn task is GaussIntensityChangeTask, sampling probability is 0.25
+[2025-05-12 09:19:19,140][       train.py][line: 212][    INFO] anomaly syn task is SourceTask, sampling probability is 0.25
+[2025-05-12 09:19:19,140][       train.py][line: 212][    INFO] anomaly syn task is IdentityTask, sampling probability is 0.25
+[2025-05-12 09:19:27,740][       train.py][line: 400][    INFO] Epoch: [1/200]	Iter: [2/400]	Loss 1.07182 (1.05772)	
+[2025-05-12 09:19:37,196][       train.py][line: 400][    INFO] Epoch: [2/200]	Iter: [4/400]	Loss 1.04003 (1.01780)	
+[2025-05-12 09:19:46,398][       train.py][line: 400][    INFO] Epoch: [3/200]	Iter: [6/400]	Loss 0.96576 (0.96737)	
+[2025-05-12 09:19:55,632][       train.py][line: 400][    INFO] Epoch: [4/200]	Iter: [8/400]	Loss 0.94140 (0.94305)	
+[2025-05-12 09:20:05,073][       train.py][line: 400][    INFO] Epoch: [5/200]	Iter: [10/400]	Loss 0.92945 (0.91510)	
+[2025-05-12 09:20:31,570][       train.py][line: 283][    INFO] (brats-met): Epoch: 5, image auroc: 0.8204, pixel_auroc: 0.9736,
+[2025-05-12 09:20:31,570][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8204, pixel auroc: 0.9736,
+[2025-05-12 09:20:31,570][       train.py][line: 318][    INFO] save checkpoints in epoch: 5
+[2025-05-12 09:20:40,133][       train.py][line: 400][    INFO] Epoch: [6/200]	Iter: [12/400]	Loss 0.92185 (0.93342)	
+[2025-05-12 09:20:49,556][       train.py][line: 400][    INFO] Epoch: [7/200]	Iter: [14/400]	Loss 0.87319 (0.89196)	
+[2025-05-12 09:20:59,001][       train.py][line: 400][    INFO] Epoch: [8/200]	Iter: [16/400]	Loss 0.95964 (0.89705)	
+[2025-05-12 09:21:08,628][       train.py][line: 400][    INFO] Epoch: [9/200]	Iter: [18/400]	Loss 0.88348 (0.87211)	
+[2025-05-12 09:21:17,776][       train.py][line: 400][    INFO] Epoch: [10/200]	Iter: [20/400]	Loss 0.89815 (0.90629)	
+[2025-05-12 09:21:45,015][       train.py][line: 283][    INFO] (brats-met): Epoch: 10, image auroc: 0.8704, pixel_auroc: 0.9799,
+[2025-05-12 09:21:45,015][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8704, pixel auroc: 0.9799,
+[2025-05-12 09:21:45,015][       train.py][line: 318][    INFO] save checkpoints in epoch: 10
+[2025-05-12 09:21:53,571][       train.py][line: 400][    INFO] Epoch: [11/200]	Iter: [22/400]	Loss 0.87272 (0.90778)	
+[2025-05-12 09:22:02,790][       train.py][line: 400][    INFO] Epoch: [12/200]	Iter: [24/400]	Loss 0.91234 (0.93177)	
+[2025-05-12 09:22:12,259][       train.py][line: 400][    INFO] Epoch: [13/200]	Iter: [26/400]	Loss 0.82598 (0.87028)	
+[2025-05-12 09:22:21,509][       train.py][line: 400][    INFO] Epoch: [14/200]	Iter: [28/400]	Loss 0.88249 (0.87712)	
+[2025-05-12 09:22:30,780][       train.py][line: 400][    INFO] Epoch: [15/200]	Iter: [30/400]	Loss 0.88458 (0.89997)	
+[2025-05-12 09:22:58,114][       train.py][line: 283][    INFO] (brats-met): Epoch: 15, image auroc: 0.8422, pixel_auroc: 0.9775,
+[2025-05-12 09:22:58,114][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8704, pixel auroc: 0.9799,
+[2025-05-12 09:23:07,217][       train.py][line: 400][    INFO] Epoch: [16/200]	Iter: [32/400]	Loss 0.86063 (0.87495)	
+[2025-05-12 09:23:16,726][       train.py][line: 400][    INFO] Epoch: [17/200]	Iter: [34/400]	Loss 0.84302 (0.84493)	
+[2025-05-12 09:23:26,293][       train.py][line: 400][    INFO] Epoch: [18/200]	Iter: [36/400]	Loss 0.81465 (0.82574)	
+[2025-05-12 09:23:35,522][       train.py][line: 400][    INFO] Epoch: [19/200]	Iter: [38/400]	Loss 0.84642 (0.86363)	
+[2025-05-12 09:23:44,754][       train.py][line: 400][    INFO] Epoch: [20/200]	Iter: [40/400]	Loss 0.86240 (0.86264)	
+[2025-05-12 09:24:12,210][       train.py][line: 283][    INFO] (brats-met): Epoch: 20, image auroc: 0.8603, pixel_auroc: 0.9451,
+[2025-05-12 09:24:12,210][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8704, pixel auroc: 0.9799,
+[2025-05-12 09:24:20,644][       train.py][line: 400][    INFO] Epoch: [21/200]	Iter: [42/400]	Loss 0.89402 (0.87610)	
+[2025-05-12 09:24:29,857][       train.py][line: 400][    INFO] Epoch: [22/200]	Iter: [44/400]	Loss 0.82728 (0.85373)	
+[2025-05-12 09:24:38,737][       train.py][line: 400][    INFO] Epoch: [23/200]	Iter: [46/400]	Loss 0.84395 (0.85173)	
+[2025-05-12 09:24:48,000][       train.py][line: 400][    INFO] Epoch: [24/200]	Iter: [48/400]	Loss 0.84704 (0.83732)	
+[2025-05-12 09:24:57,254][       train.py][line: 400][    INFO] Epoch: [25/200]	Iter: [50/400]	Loss 0.85010 (0.81749)	
+[2025-05-12 09:25:24,675][       train.py][line: 283][    INFO] (brats-met): Epoch: 25, image auroc: 0.8669, pixel_auroc: 0.9667,
+[2025-05-12 09:25:24,675][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8704, pixel auroc: 0.9799,
+[2025-05-12 09:25:33,435][       train.py][line: 400][    INFO] Epoch: [26/200]	Iter: [52/400]	Loss 0.89013 (0.85567)	
+[2025-05-12 09:25:42,889][       train.py][line: 400][    INFO] Epoch: [27/200]	Iter: [54/400]	Loss 0.84070 (0.83194)	
+[2025-05-12 09:25:52,387][       train.py][line: 400][    INFO] Epoch: [28/200]	Iter: [56/400]	Loss 0.79015 (0.82771)	
+[2025-05-12 09:26:01,645][       train.py][line: 400][    INFO] Epoch: [29/200]	Iter: [58/400]	Loss 0.88759 (0.88475)	
+[2025-05-12 09:26:11,065][       train.py][line: 400][    INFO] Epoch: [30/200]	Iter: [60/400]	Loss 0.78186 (0.82599)	
+[2025-05-12 09:26:38,985][       train.py][line: 283][    INFO] (brats-met): Epoch: 30, image auroc: 0.8901, pixel_auroc: 0.9708,
+[2025-05-12 09:26:38,985][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:26:38,985][       train.py][line: 318][    INFO] save checkpoints in epoch: 30
+[2025-05-12 09:26:47,794][       train.py][line: 400][    INFO] Epoch: [31/200]	Iter: [62/400]	Loss 0.83178 (0.85894)	
+[2025-05-12 09:26:57,083][       train.py][line: 400][    INFO] Epoch: [32/200]	Iter: [64/400]	Loss 0.87757 (0.86029)	
+[2025-05-12 09:27:06,551][       train.py][line: 400][    INFO] Epoch: [33/200]	Iter: [66/400]	Loss 0.78093 (0.79581)	
+[2025-05-12 09:27:16,012][       train.py][line: 400][    INFO] Epoch: [34/200]	Iter: [68/400]	Loss 0.90758 (0.86653)	
+[2025-05-12 09:27:25,461][       train.py][line: 400][    INFO] Epoch: [35/200]	Iter: [70/400]	Loss 0.85876 (0.84444)	
+[2025-05-12 09:27:53,627][       train.py][line: 283][    INFO] (brats-met): Epoch: 35, image auroc: 0.8660, pixel_auroc: 0.9482,
+[2025-05-12 09:27:53,627][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:28:02,398][       train.py][line: 400][    INFO] Epoch: [36/200]	Iter: [72/400]	Loss 0.78696 (0.81754)	
+[2025-05-12 09:28:11,964][       train.py][line: 400][    INFO] Epoch: [37/200]	Iter: [74/400]	Loss 0.82872 (0.83610)	
+[2025-05-12 09:28:21,388][       train.py][line: 400][    INFO] Epoch: [38/200]	Iter: [76/400]	Loss 0.81460 (0.84697)	
+[2025-05-12 09:28:30,857][       train.py][line: 400][    INFO] Epoch: [39/200]	Iter: [78/400]	Loss 0.92479 (0.86230)	
+[2025-05-12 09:28:40,289][       train.py][line: 400][    INFO] Epoch: [40/200]	Iter: [80/400]	Loss 0.81865 (0.76963)	
+[2025-05-12 09:29:08,319][       train.py][line: 283][    INFO] (brats-met): Epoch: 40, image auroc: 0.8717, pixel_auroc: 0.9679,
+[2025-05-12 09:29:08,319][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:29:17,171][       train.py][line: 400][    INFO] Epoch: [41/200]	Iter: [82/400]	Loss 0.78063 (0.82138)	
+[2025-05-12 09:29:26,561][       train.py][line: 400][    INFO] Epoch: [42/200]	Iter: [84/400]	Loss 0.81779 (0.84245)	
+[2025-05-12 09:29:35,990][       train.py][line: 400][    INFO] Epoch: [43/200]	Iter: [86/400]	Loss 0.88857 (0.88386)	
+[2025-05-12 09:29:45,418][       train.py][line: 400][    INFO] Epoch: [44/200]	Iter: [88/400]	Loss 0.84263 (0.81563)	
+[2025-05-12 09:29:54,703][       train.py][line: 400][    INFO] Epoch: [45/200]	Iter: [90/400]	Loss 0.78670 (0.81109)	
+[2025-05-12 09:30:22,848][       train.py][line: 283][    INFO] (brats-met): Epoch: 45, image auroc: 0.8774, pixel_auroc: 0.9746,
+[2025-05-12 09:30:22,848][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:30:31,756][       train.py][line: 400][    INFO] Epoch: [46/200]	Iter: [92/400]	Loss 0.82703 (0.83581)	
+[2025-05-12 09:30:40,996][       train.py][line: 400][    INFO] Epoch: [47/200]	Iter: [94/400]	Loss 0.85315 (0.86186)	
+[2025-05-12 09:30:50,003][       train.py][line: 400][    INFO] Epoch: [48/200]	Iter: [96/400]	Loss 0.88822 (0.86821)	
+[2025-05-12 09:30:59,313][       train.py][line: 400][    INFO] Epoch: [49/200]	Iter: [98/400]	Loss 0.87596 (0.87291)	
+[2025-05-12 09:31:08,587][       train.py][line: 400][    INFO] Epoch: [50/200]	Iter: [100/400]	Loss 0.83858 (0.87005)	
+[2025-05-12 09:31:36,683][       train.py][line: 283][    INFO] (brats-met): Epoch: 50, image auroc: 0.8704, pixel_auroc: 0.9531,
+[2025-05-12 09:31:36,684][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:31:45,211][       train.py][line: 400][    INFO] Epoch: [51/200]	Iter: [102/400]	Loss 0.76645 (0.81978)	
+[2025-05-12 09:31:54,375][       train.py][line: 400][    INFO] Epoch: [52/200]	Iter: [104/400]	Loss 0.79292 (0.80958)	
+[2025-05-12 09:32:03,460][       train.py][line: 400][    INFO] Epoch: [53/200]	Iter: [106/400]	Loss 0.83984 (0.88519)	
+[2025-05-12 09:32:12,336][       train.py][line: 400][    INFO] Epoch: [54/200]	Iter: [108/400]	Loss 0.87905 (0.90156)	
+[2025-05-12 09:32:21,365][       train.py][line: 400][    INFO] Epoch: [55/200]	Iter: [110/400]	Loss 0.74925 (0.81688)	
+[2025-05-12 09:32:49,496][       train.py][line: 283][    INFO] (brats-met): Epoch: 55, image auroc: 0.8697, pixel_auroc: 0.9386,
+[2025-05-12 09:32:49,496][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:32:58,350][       train.py][line: 400][    INFO] Epoch: [56/200]	Iter: [112/400]	Loss 0.70269 (0.75179)	
+[2025-05-12 09:33:07,892][       train.py][line: 400][    INFO] Epoch: [57/200]	Iter: [114/400]	Loss 0.81295 (0.82658)	
+[2025-05-12 09:33:17,253][       train.py][line: 400][    INFO] Epoch: [58/200]	Iter: [116/400]	Loss 0.86688 (0.82215)	
+[2025-05-12 09:33:26,707][       train.py][line: 400][    INFO] Epoch: [59/200]	Iter: [118/400]	Loss 0.81903 (0.83635)	
+[2025-05-12 09:33:36,180][       train.py][line: 400][    INFO] Epoch: [60/200]	Iter: [120/400]	Loss 0.90976 (0.87340)	
+[2025-05-12 09:34:04,400][       train.py][line: 283][    INFO] (brats-met): Epoch: 60, image auroc: 0.8593, pixel_auroc: 0.9498,
+[2025-05-12 09:34:04,400][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:34:13,189][       train.py][line: 400][    INFO] Epoch: [61/200]	Iter: [122/400]	Loss 0.80192 (0.77944)	
+[2025-05-12 09:34:22,513][       train.py][line: 400][    INFO] Epoch: [62/200]	Iter: [124/400]	Loss 0.87511 (0.84928)	
+[2025-05-12 09:34:31,797][       train.py][line: 400][    INFO] Epoch: [63/200]	Iter: [126/400]	Loss 0.82480 (0.85458)	
+[2025-05-12 09:34:41,126][       train.py][line: 400][    INFO] Epoch: [64/200]	Iter: [128/400]	Loss 0.75725 (0.77593)	
+[2025-05-12 09:34:50,593][       train.py][line: 400][    INFO] Epoch: [65/200]	Iter: [130/400]	Loss 0.82340 (0.80270)	
+[2025-05-12 09:35:18,752][       train.py][line: 283][    INFO] (brats-met): Epoch: 65, image auroc: 0.8395, pixel_auroc: 0.9365,
+[2025-05-12 09:35:18,752][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:35:27,602][       train.py][line: 400][    INFO] Epoch: [66/200]	Iter: [132/400]	Loss 0.75214 (0.79193)	
+[2025-05-12 09:35:36,946][       train.py][line: 400][    INFO] Epoch: [67/200]	Iter: [134/400]	Loss 0.85357 (0.85062)	
+[2025-05-12 09:35:46,352][       train.py][line: 400][    INFO] Epoch: [68/200]	Iter: [136/400]	Loss 0.80705 (0.77957)	
+[2025-05-12 09:35:55,709][       train.py][line: 400][    INFO] Epoch: [69/200]	Iter: [138/400]	Loss 0.86827 (0.86247)	
+[2025-05-12 09:36:04,796][       train.py][line: 400][    INFO] Epoch: [70/200]	Iter: [140/400]	Loss 0.82867 (0.81398)	
+[2025-05-12 09:36:32,703][       train.py][line: 283][    INFO] (brats-met): Epoch: 70, image auroc: 0.8460, pixel_auroc: 0.9450,
+[2025-05-12 09:36:32,703][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:36:41,549][       train.py][line: 400][    INFO] Epoch: [71/200]	Iter: [142/400]	Loss 0.85274 (0.83142)	
+[2025-05-12 09:36:50,908][       train.py][line: 400][    INFO] Epoch: [72/200]	Iter: [144/400]	Loss 0.78188 (0.76721)	
+[2025-05-12 09:37:00,287][       train.py][line: 400][    INFO] Epoch: [73/200]	Iter: [146/400]	Loss 0.81178 (0.76655)	
+[2025-05-12 09:37:09,855][       train.py][line: 400][    INFO] Epoch: [74/200]	Iter: [148/400]	Loss 0.81910 (0.81689)	
+[2025-05-12 09:37:19,228][       train.py][line: 400][    INFO] Epoch: [75/200]	Iter: [150/400]	Loss 0.85034 (0.83205)	
+[2025-05-12 09:37:47,555][       train.py][line: 283][    INFO] (brats-met): Epoch: 75, image auroc: 0.8742, pixel_auroc: 0.9637,
+[2025-05-12 09:37:47,555][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:37:56,469][       train.py][line: 400][    INFO] Epoch: [76/200]	Iter: [152/400]	Loss 0.77133 (0.80407)	
+[2025-05-12 09:38:06,038][       train.py][line: 400][    INFO] Epoch: [77/200]	Iter: [154/400]	Loss 0.81841 (0.83639)	
+[2025-05-12 09:38:15,460][       train.py][line: 400][    INFO] Epoch: [78/200]	Iter: [156/400]	Loss 0.80103 (0.82905)	
+[2025-05-12 09:38:24,649][       train.py][line: 400][    INFO] Epoch: [79/200]	Iter: [158/400]	Loss 0.78888 (0.84137)	
+[2025-05-12 09:38:34,126][       train.py][line: 400][    INFO] Epoch: [80/200]	Iter: [160/400]	Loss 0.89730 (0.79906)	
+[2025-05-12 09:39:02,297][       train.py][line: 283][    INFO] (brats-met): Epoch: 80, image auroc: 0.8506, pixel_auroc: 0.9462,
+[2025-05-12 09:39:02,297][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:39:11,161][       train.py][line: 400][    INFO] Epoch: [81/200]	Iter: [162/400]	Loss 0.80188 (0.83510)	
+[2025-05-12 09:39:20,535][       train.py][line: 400][    INFO] Epoch: [82/200]	Iter: [164/400]	Loss 0.75719 (0.77455)	
+[2025-05-12 09:39:29,810][       train.py][line: 400][    INFO] Epoch: [83/200]	Iter: [166/400]	Loss 0.82580 (0.81870)	
+[2025-05-12 09:39:39,206][       train.py][line: 400][    INFO] Epoch: [84/200]	Iter: [168/400]	Loss 0.78337 (0.77427)	
+[2025-05-12 09:39:48,459][       train.py][line: 400][    INFO] Epoch: [85/200]	Iter: [170/400]	Loss 0.75438 (0.80515)	
+[2025-05-12 09:40:16,607][       train.py][line: 283][    INFO] (brats-met): Epoch: 85, image auroc: 0.8618, pixel_auroc: 0.9377,
+[2025-05-12 09:40:16,607][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:40:25,528][       train.py][line: 400][    INFO] Epoch: [86/200]	Iter: [172/400]	Loss 0.82840 (0.82229)	
+[2025-05-12 09:40:35,022][       train.py][line: 400][    INFO] Epoch: [87/200]	Iter: [174/400]	Loss 0.80997 (0.83113)	
+[2025-05-12 09:40:44,502][       train.py][line: 400][    INFO] Epoch: [88/200]	Iter: [176/400]	Loss 0.87107 (0.81259)	
+[2025-05-12 09:40:54,026][       train.py][line: 400][    INFO] Epoch: [89/200]	Iter: [178/400]	Loss 0.77563 (0.81297)	
+[2025-05-12 09:41:03,417][       train.py][line: 400][    INFO] Epoch: [90/200]	Iter: [180/400]	Loss 0.86314 (0.80301)	
+[2025-05-12 09:41:31,509][       train.py][line: 283][    INFO] (brats-met): Epoch: 90, image auroc: 0.8526, pixel_auroc: 0.9501,
+[2025-05-12 09:41:31,510][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:41:40,078][       train.py][line: 400][    INFO] Epoch: [91/200]	Iter: [182/400]	Loss 0.82519 (0.82993)	
+[2025-05-12 09:41:49,286][       train.py][line: 400][    INFO] Epoch: [92/200]	Iter: [184/400]	Loss 0.78497 (0.79613)	
+[2025-05-12 09:41:58,821][       train.py][line: 400][    INFO] Epoch: [93/200]	Iter: [186/400]	Loss 0.77789 (0.81754)	
+[2025-05-12 09:42:08,235][       train.py][line: 400][    INFO] Epoch: [94/200]	Iter: [188/400]	Loss 0.75532 (0.78388)	
+[2025-05-12 09:42:17,618][       train.py][line: 400][    INFO] Epoch: [95/200]	Iter: [190/400]	Loss 0.85176 (0.83720)	
+[2025-05-12 09:42:45,623][       train.py][line: 283][    INFO] (brats-met): Epoch: 95, image auroc: 0.8578, pixel_auroc: 0.9580,
+[2025-05-12 09:42:45,623][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:42:54,421][       train.py][line: 400][    INFO] Epoch: [96/200]	Iter: [192/400]	Loss 0.75484 (0.80987)	
+[2025-05-12 09:43:03,927][       train.py][line: 400][    INFO] Epoch: [97/200]	Iter: [194/400]	Loss 0.82032 (0.81702)	
+[2025-05-12 09:43:13,158][       train.py][line: 400][    INFO] Epoch: [98/200]	Iter: [196/400]	Loss 0.74264 (0.84727)	
+[2025-05-12 09:43:22,686][       train.py][line: 400][    INFO] Epoch: [99/200]	Iter: [198/400]	Loss 0.71349 (0.77934)	
+[2025-05-12 09:43:32,286][       train.py][line: 400][    INFO] Epoch: [100/200]	Iter: [200/400]	Loss 0.82535 (0.84208)	
+[2025-05-12 09:44:00,531][       train.py][line: 283][    INFO] (brats-met): Epoch: 100, image auroc: 0.8485, pixel_auroc: 0.9520,
+[2025-05-12 09:44:00,532][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:44:09,585][       train.py][line: 400][    INFO] Epoch: [101/200]	Iter: [202/400]	Loss 0.87005 (0.82211)	
+[2025-05-12 09:44:19,178][       train.py][line: 400][    INFO] Epoch: [102/200]	Iter: [204/400]	Loss 0.82180 (0.84010)	
+[2025-05-12 09:44:28,580][       train.py][line: 400][    INFO] Epoch: [103/200]	Iter: [206/400]	Loss 0.78123 (0.81779)	
+[2025-05-12 09:44:38,076][       train.py][line: 400][    INFO] Epoch: [104/200]	Iter: [208/400]	Loss 0.73046 (0.78876)	
+[2025-05-12 09:44:47,576][       train.py][line: 400][    INFO] Epoch: [105/200]	Iter: [210/400]	Loss 0.79819 (0.79143)	
+[2025-05-12 09:45:15,909][       train.py][line: 283][    INFO] (brats-met): Epoch: 105, image auroc: 0.8515, pixel_auroc: 0.9538,
+[2025-05-12 09:45:15,909][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:45:24,979][       train.py][line: 400][    INFO] Epoch: [106/200]	Iter: [212/400]	Loss 0.86031 (0.85630)	
+[2025-05-12 09:45:34,626][       train.py][line: 400][    INFO] Epoch: [107/200]	Iter: [214/400]	Loss 0.80966 (0.80015)	
+[2025-05-12 09:45:44,425][       train.py][line: 400][    INFO] Epoch: [108/200]	Iter: [216/400]	Loss 0.80978 (0.79623)	
+[2025-05-12 09:45:53,845][       train.py][line: 400][    INFO] Epoch: [109/200]	Iter: [218/400]	Loss 0.84589 (0.83147)	
+[2025-05-12 09:46:03,416][       train.py][line: 400][    INFO] Epoch: [110/200]	Iter: [220/400]	Loss 0.74469 (0.75534)	
+[2025-05-12 09:46:31,646][       train.py][line: 283][    INFO] (brats-met): Epoch: 110, image auroc: 0.8770, pixel_auroc: 0.9591,
+[2025-05-12 09:46:31,646][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:46:40,442][       train.py][line: 400][    INFO] Epoch: [111/200]	Iter: [222/400]	Loss 0.83882 (0.83484)	
+[2025-05-12 09:46:50,023][       train.py][line: 400][    INFO] Epoch: [112/200]	Iter: [224/400]	Loss 0.85434 (0.84350)	
+[2025-05-12 09:46:59,548][       train.py][line: 400][    INFO] Epoch: [113/200]	Iter: [226/400]	Loss 0.86387 (0.85742)	
+[2025-05-12 09:47:09,272][       train.py][line: 400][    INFO] Epoch: [114/200]	Iter: [228/400]	Loss 0.77876 (0.79962)	
+[2025-05-12 09:47:18,611][       train.py][line: 400][    INFO] Epoch: [115/200]	Iter: [230/400]	Loss 0.87991 (0.83193)	
+[2025-05-12 09:47:46,859][       train.py][line: 283][    INFO] (brats-met): Epoch: 115, image auroc: 0.8531, pixel_auroc: 0.9518,
+[2025-05-12 09:47:46,860][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:47:55,943][       train.py][line: 400][    INFO] Epoch: [116/200]	Iter: [232/400]	Loss 0.79206 (0.83769)	
+[2025-05-12 09:48:05,609][       train.py][line: 400][    INFO] Epoch: [117/200]	Iter: [234/400]	Loss 0.69697 (0.72978)	
+[2025-05-12 09:48:15,236][       train.py][line: 400][    INFO] Epoch: [118/200]	Iter: [236/400]	Loss 0.80089 (0.84228)	
+[2025-05-12 09:48:24,753][       train.py][line: 400][    INFO] Epoch: [119/200]	Iter: [238/400]	Loss 0.82753 (0.83578)	
+[2025-05-12 09:48:34,394][       train.py][line: 400][    INFO] Epoch: [120/200]	Iter: [240/400]	Loss 0.74566 (0.75739)	
+[2025-05-12 09:49:02,524][       train.py][line: 283][    INFO] (brats-met): Epoch: 120, image auroc: 0.8721, pixel_auroc: 0.9577,
+[2025-05-12 09:49:02,524][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:49:11,606][       train.py][line: 400][    INFO] Epoch: [121/200]	Iter: [242/400]	Loss 0.76265 (0.79429)	
+[2025-05-12 09:49:21,005][       train.py][line: 400][    INFO] Epoch: [122/200]	Iter: [244/400]	Loss 0.76501 (0.82336)	
+[2025-05-12 09:49:30,538][       train.py][line: 400][    INFO] Epoch: [123/200]	Iter: [246/400]	Loss 0.85372 (0.83526)	
+[2025-05-12 09:49:40,139][       train.py][line: 400][    INFO] Epoch: [124/200]	Iter: [248/400]	Loss 0.81270 (0.84255)	
+[2025-05-12 09:49:49,914][       train.py][line: 400][    INFO] Epoch: [125/200]	Iter: [250/400]	Loss 0.79295 (0.79383)	
+[2025-05-12 09:50:18,189][       train.py][line: 283][    INFO] (brats-met): Epoch: 125, image auroc: 0.8278, pixel_auroc: 0.9262,
+[2025-05-12 09:50:18,190][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:50:27,038][       train.py][line: 400][    INFO] Epoch: [126/200]	Iter: [252/400]	Loss 0.89281 (0.85817)	
+[2025-05-12 09:50:36,497][       train.py][line: 400][    INFO] Epoch: [127/200]	Iter: [254/400]	Loss 0.83911 (0.85643)	
+[2025-05-12 09:50:46,110][       train.py][line: 400][    INFO] Epoch: [128/200]	Iter: [256/400]	Loss 0.90903 (0.86326)	
+[2025-05-12 09:50:55,571][       train.py][line: 400][    INFO] Epoch: [129/200]	Iter: [258/400]	Loss 0.84948 (0.79386)	
+[2025-05-12 09:51:05,131][       train.py][line: 400][    INFO] Epoch: [130/200]	Iter: [260/400]	Loss 0.78960 (0.77960)	
+[2025-05-12 09:51:33,273][       train.py][line: 283][    INFO] (brats-met): Epoch: 130, image auroc: 0.8372, pixel_auroc: 0.9590,
+[2025-05-12 09:51:33,274][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:51:42,478][       train.py][line: 400][    INFO] Epoch: [131/200]	Iter: [262/400]	Loss 0.80347 (0.78324)	
+[2025-05-12 09:51:52,029][       train.py][line: 400][    INFO] Epoch: [132/200]	Iter: [264/400]	Loss 0.82620 (0.82562)	
+[2025-05-12 09:52:01,462][       train.py][line: 400][    INFO] Epoch: [133/200]	Iter: [266/400]	Loss 0.81534 (0.77664)	
+[2025-05-12 09:52:10,755][       train.py][line: 400][    INFO] Epoch: [134/200]	Iter: [268/400]	Loss 0.86397 (0.85898)	
+[2025-05-12 09:52:19,935][       train.py][line: 400][    INFO] Epoch: [135/200]	Iter: [270/400]	Loss 0.86876 (0.82568)	
+[2025-05-12 09:52:48,207][       train.py][line: 283][    INFO] (brats-met): Epoch: 135, image auroc: 0.8511, pixel_auroc: 0.9603,
+[2025-05-12 09:52:48,207][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:52:57,290][       train.py][line: 400][    INFO] Epoch: [136/200]	Iter: [272/400]	Loss 0.81576 (0.81908)	
+[2025-05-12 09:53:06,943][       train.py][line: 400][    INFO] Epoch: [137/200]	Iter: [274/400]	Loss 0.87647 (0.80774)	
+[2025-05-12 09:53:16,570][       train.py][line: 400][    INFO] Epoch: [138/200]	Iter: [276/400]	Loss 0.76508 (0.77728)	
+[2025-05-12 09:53:26,142][       train.py][line: 400][    INFO] Epoch: [139/200]	Iter: [278/400]	Loss 0.84344 (0.81116)	
+[2025-05-12 09:53:35,741][       train.py][line: 400][    INFO] Epoch: [140/200]	Iter: [280/400]	Loss 0.87576 (0.83547)	
+[2025-05-12 09:54:03,784][       train.py][line: 283][    INFO] (brats-met): Epoch: 140, image auroc: 0.8528, pixel_auroc: 0.9476,
+[2025-05-12 09:54:03,784][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:54:12,673][       train.py][line: 400][    INFO] Epoch: [141/200]	Iter: [282/400]	Loss 0.79310 (0.79340)	
+[2025-05-12 09:54:22,394][       train.py][line: 400][    INFO] Epoch: [142/200]	Iter: [284/400]	Loss 0.91605 (0.85122)	
+[2025-05-12 09:54:31,919][       train.py][line: 400][    INFO] Epoch: [143/200]	Iter: [286/400]	Loss 0.81946 (0.81639)	
+[2025-05-12 09:54:41,281][       train.py][line: 400][    INFO] Epoch: [144/200]	Iter: [288/400]	Loss 0.81067 (0.80502)	
+[2025-05-12 09:54:50,896][       train.py][line: 400][    INFO] Epoch: [145/200]	Iter: [290/400]	Loss 0.78712 (0.78736)	
+[2025-05-12 09:55:19,005][       train.py][line: 283][    INFO] (brats-met): Epoch: 145, image auroc: 0.8578, pixel_auroc: 0.9647,
+[2025-05-12 09:55:19,005][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,
+[2025-05-12 09:55:27,504][       train.py][line: 400][    INFO] Epoch: [146/200]	Iter: [292/400]	Loss 0.72376 (0.76239)	
+[2025-05-12 09:55:36,565][       train.py][line: 400][    INFO] Epoch: [147/200]	Iter: [294/400]	Loss 0.82334 (0.81759)	
+[2025-05-12 09:55:45,711][       train.py][line: 400][    INFO] Epoch: [148/200]	Iter: [296/400]	Loss 0.82824 (0.83329)	
+[2025-05-12 09:55:55,001][       train.py][line: 400][    INFO] Epoch: [149/200]	Iter: [298/400]	Loss 0.86196 (0.83821)	
+[2025-05-12 09:56:04,182][       train.py][line: 400][    INFO] Epoch: [150/200]	Iter: [300/400]	Loss 0.76266 (0.79703)	
+[2025-05-12 09:56:32,279][       train.py][line: 283][    INFO] (brats-met): Epoch: 150, image auroc: 0.8597, pixel_auroc: 0.9432,
+[2025-05-12 09:56:32,279][       train.py][line: 302][    INFO] (brats-met best): image auroc: 0.8901, pixel auroc: 0.9708,

@@ -353,14 +353,17 @@ class BratsMetTestDataset(torch.utils.data.Dataset):
 
     def get_image_data(self):
         data_to_iterate = []
+
         with open(os.path.join(self.source, 'Testing', "test.json"), 'r') as f:
-            data = json.load(f)
+            data = [json.loads(line) for line in f]
+
         for row in data:
             if self.slice_idx == -1:
-                # necessary starting above 0 since AUROC would be impossible with only negative masks
+                
                 for slice in range(0, 155, int(self.args.distance_per_slice)*6):
                     row['slice'] = slice
                     data_to_iterate.append(row.copy())
+
             else:
                 data_to_iterate.append(row)
         return data_to_iterate

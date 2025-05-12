@@ -35,6 +35,7 @@ def sample_per_slice(data_to_iterate, k_shot):
         values = data_to_iterate[key]
         if len(values) < k_shot:
             raise ValueError(f"Not enough elements to sample {k_shot} from key {key}")
+        #print(random.sample(values, k_shot))
         all_samples.extend(random.sample(values, k_shot))
     return all_samples
 

@@ -263,15 +263,7 @@ def validate(
     # pixel_preds = [Tensor[B, H, W], Tensor[B, H, W], ...] -> Tensor[N, H, W]
 
     pixel_preds_np = [pixel_pred.cpu().numpy() for pixel_pred in pixel_preds]
-    """if dataset_name == "brats-met":
-        pixel_preds = [
-            normalization(pixel_pred, args.config.image_size)
-            for pixel_pred in pixel_preds
-        ]
-    else:
-        pixel_preds = normalization(
-            torch.cat(pixel_preds, dim=0), args.config.image_size
-        )"""
+
     pixel_preds = normalization(
             torch.cat(pixel_preds, dim=0), args.config.image_size
         )
@@ -368,11 +360,10 @@ def validate(
                 save_images_root, "{}_{}_{}.jpg".format(i, label_, image_name)
             )
         )
-
+    
     metric = compute_imagewise_metrics(image_preds, image_gts)
-    if (
-        dataset_name == "busi" or dataset_name == "brats-met"
-    ):  # for these datasets, since we have a ground truth mask, we can compute pixel-wise metrics
+    if (dataset_name == "busi" or dataset_name == "brats-met"):  
+        # for these datasets, since we have a ground truth mask, we can compute pixel-wise metrics
         metric.update(compute_pixelwise_metrics(pixel_preds_np, pixel_gts))
     return metric
 
