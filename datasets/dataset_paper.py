@@ -306,6 +306,7 @@ class BratsMetTestDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         info = self.data_to_iterate[idx] 
+        # eg: {'filename': 'Testing/BraTS-MET-00415-000', 'label': 1, 'label_name': 'abnormal', 'clsname': 'abnormal', 'slice': 150}
 
         if self.slice_idx == -1:
             image_path = os.path.join(self.source, info["filename"], 't2w', str(info['slice']).zfill(3)+'.jpeg')  
@@ -358,16 +359,9 @@ class BratsMetTestDataset(torch.utils.data.Dataset):
 
         for row in data:
             if self.slice_idx == -1:
-                
-                """for slice in range(0, 155, int(self.args.distance_per_slice)*6):
+                for slice in range(0, 155, int(self.args.distance_per_slice)*6):
                     row['slice'] = slice
-                    data_to_iterate.append(row.copy())"""
-                row['slice'] = 50
-                data_to_iterate.append(row.copy())
-
-                row['slice'] = 100
-                data_to_iterate.append(row.copy())
-
+                    data_to_iterate.append(row.copy())
             else:
                 data_to_iterate.append(row)
         return data_to_iterate

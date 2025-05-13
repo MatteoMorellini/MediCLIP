@@ -183,7 +183,7 @@ def main(args):
             )
         
         test_dataloader = DataLoader(
-            test_dataset, batch_size=args.config.batch_size, num_workers=1
+            test_dataset, batch_size=args.config.batch_size*4, num_workers=1
         )
         # iterates over batches, which are made by the value returned by getitem
         # e.g. getitem returns image,label -> dataloader returns batches of images and labels
@@ -232,6 +232,7 @@ def validate(
     pixel_gts = []
 
     image_paths = []
+    mask_folder = Path("./masks")
 
     # iterate over batches of test images to predict
     for i, input in enumerate(test_dataloader):  
@@ -343,8 +344,14 @@ def validate(
         image = image.resize((args.config.image_size, args.config.image_size))
         image = np.array(image).astype(np.uint8)
 
-        heat = show_cam_on_image(image / 255, pixel_pred, use_rgb=True)
-
+        patient = image_path.split('/')[3]
+        patient_folder = mask_folder / patient
+        patient_folder.mkdir(parents=True, exist_ok=True)
+        mask = (pixel_pred * 255).astype(np.uint8)
+        mask = Image.fromarray(mask, mode = 'L')
+        filepath = patient_folder / f"{image_name}.jpeg"
+        mask.save(filepath)
+        
         label_ = "normal" if image_gt == 0 else "abnormal"
 
         merge = [image, heat]

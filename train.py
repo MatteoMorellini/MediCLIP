@@ -186,18 +186,6 @@ def main(args):
                 preprocess=preprocess,
                 slice_idx=-1
             )
-            test_dataset_2 = BratsMetTestDataset(
-                args=args.config,
-                source=os.path.join(args.config.data_root, test_dataset_name),
-                preprocess=preprocess,
-                slice_idx=50
-            )
-            test_dataset_3 = BratsMetTestDataset(
-                args=args.config,
-                source=os.path.join(args.config.data_root, test_dataset_name),
-                preprocess=preprocess,
-                slice_idx=100
-            )
         else:
             raise NotImplementedError(
                 "dataset must in ['chexpert','busi','brainmri', 'brats-met'] "
@@ -206,19 +194,10 @@ def main(args):
         test_dataloader = DataLoader(
             test_dataset, batch_size=args.config.batch_size, num_workers=2
         )
-        test_dataloader_2 = DataLoader(
-            test_dataset_2, batch_size=args.config.batch_size, num_workers=2
-        )
-        test_dataloader_3 = DataLoader(
-            test_dataset_3, batch_size=args.config.batch_size, num_workers=2
-        )
+
         test_dataloaders[test_dataset_name] = test_dataloader
-        test_dataloaders['brats-2'] = test_dataloader_2
-        test_dataloaders['brats-3'] = test_dataloader_3
 
         best_record[test_dataset_name] = None
-        best_record['brats-2'] = None
-        best_record['brats-3'] = None
 
     logger.info(
         "train data ({}) len {}".format(args.config.train_dataset, len(train_dataset))

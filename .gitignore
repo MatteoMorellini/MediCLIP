@@ -10,3 +10,6 @@ path/to/venv
 open_clip/
 .*/
 fewshot/
+important_results/
+new_important_results/
+results/

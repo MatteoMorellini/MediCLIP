@@ -104,15 +104,13 @@ class TrainDataset(data.Dataset):
             # option 1 - shuffle the dictionary and take the first K healthy slice
             # option 2 - take all ith healthy slices and select K out of them
             # I prefer option 2 since it's easier 
-            # todo: change directory of meta
             meta_info = json.load(open(f"{self.root}/Training/meta.json", "r"))
             data_to_iterate = defaultdict(list)
             # iterate through patients
             for key, value in meta_info['train']['brain'].items():
                 # iterate through slices of a patient
                 for id, slice in value.items():
-                    if int(id) == 50 and slice.get('anomaly') == 0:
-                    #if int(id) % self.args.distance_per_slice == 0 and slice.get('anomaly')==0:
+                    if int(id) % self.args.distance_per_slice == 0 and slice.get('anomaly')==0:
                         data_to_iterate[id].append(slice)
                 #data_to_iterate.append(value[str(slice_idx).zfill(3)])
             if k_shot != -1: 
