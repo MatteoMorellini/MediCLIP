@@ -359,9 +359,11 @@ class BratsMetTestDataset(torch.utils.data.Dataset):
 
         for row in data:
             if self.slice_idx == -1:
-                for slice in range(0, 155, int(self.args.distance_per_slice)*6):
+                for slice in range(120, 155):
+                #for slice in range(0, 155, int(self.args.distance_per_slice)*6):
                     row['slice'] = slice
                     data_to_iterate.append(row.copy())
             else:
                 data_to_iterate.append(row)
         return data_to_iterate
+        

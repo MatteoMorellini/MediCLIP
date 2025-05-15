@@ -183,7 +183,7 @@ def main(args):
             )
         
         test_dataloader = DataLoader(
-            test_dataset, batch_size=args.config.batch_size*4, num_workers=1
+            test_dataset, batch_size=args.config.batch_size*5, num_workers=1
         )
         # iterates over batches, which are made by the value returned by getitem
         # e.g. getitem returns image,label -> dataloader returns batches of images and labels
@@ -200,6 +200,9 @@ def main(args):
             prompt_maker,
             map_maker,
         )
+
+        #!!! 
+        return
 
         if test_dataset_name not in {'busi', 'brats-met'}:
             print(
@@ -351,8 +354,12 @@ def validate(
         mask = Image.fromarray(mask, mode = 'L')
         filepath = patient_folder / f"{image_name}.jpeg"
         mask.save(filepath)
-        
+
+        continue
+        """
         label_ = "normal" if image_gt == 0 else "abnormal"
+
+        heat = show_cam_on_image(image / 255, pixel_pred, use_rgb=True)
 
         merge = [image, heat]
 
@@ -372,7 +379,8 @@ def validate(
     if (dataset_name == "busi" or dataset_name == "brats-met"):  
         # for these datasets, since we have a ground truth mask, we can compute pixel-wise metrics
         metric.update(compute_pixelwise_metrics(pixel_preds_np, pixel_gts))
-    return metric
+    return metric"""
+    return None
 
 
 if __name__ == "__main__":

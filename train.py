@@ -31,6 +31,8 @@ from tqdm import tqdm
 import multiprocessing
 import numpy as np
 import random
+from pathlib import Path
+import json
 
 warnings.filterwarnings("ignore")
 
@@ -75,6 +77,10 @@ def main(args):
         args.config.model_name, args.config.image_size, device=device
     )
 
+    if args.pmc:
+        model_path = '/home/aldo_marzullo/.cache/huggingface/hub/models--ryanyip7777--pmc_vit_l_14/snapshots/a1db5a40d0a07855a435d9fabde846fdf7028be4/open_clip_pytorch_model.bin'
+        model.load_state_dict(torch.load(model_path, weights_only=True))
+
     for param in model.parameters():
         param.requires_grad_(False)
 
@@ -112,6 +118,13 @@ def main(args):
     ).to(model.device)
 
     map_maker = MapMaker(image_size=args.config.image_size).to(model.device)
+
+    if args.checkpoint_path:
+        checkpoints = torch.load(
+            args.checkpoint_path, map_location=str(device)
+        )  # Pass device as string
+        adapter.load_state_dict(checkpoints["adapter_state_dict"])
+        prompt_maker.prompt_learner.load_state_dict(checkpoints["prompt_state_dict"])
 
     optimizer = torch.optim.Adam(
         [
@@ -474,6 +487,8 @@ if __name__ == "__main__":
         default=False,
         help="whether to k-shot refers to patients",
     )
+    parser.add_argument("--checkpoint_path", type=str, help="the checkpoint path", default=None)
+    parser.add_argument('--pmc', type=bool, help = 'use pmc as backbone', default=False) 
     args = parser.parse_args()
     torch.multiprocessing.set_start_method("spawn")
     main(args)

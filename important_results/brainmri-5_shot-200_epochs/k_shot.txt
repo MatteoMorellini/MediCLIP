@@ -1,5 +1,0 @@
-train/normal/image_31.jpg
-train/normal/image_5.jpg
-train/normal/image_3.jpg
-train/normal/image_12.jpg
-train/normal/image_9.jpg
